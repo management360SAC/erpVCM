@@ -1,0 +1,64 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: vcm-mysql
+    command: ["--default-authentication-plugin=mysql_native_password"]
+    environment:
+      MYSQL_ROOT_PASSWORD: YourStrong!Passw0rd
+      MYSQL_DATABASE: vcm_crm
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app_pw
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+      - ./db/mysql-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD | grep 'mysqld is alive' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vcm-backend
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: vcm-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE=http://localhost:8080/api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  pma:
+    image: phpmyadmin:latest
+    container_name: vcm-pma
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: YourStrong!Passw0rd
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+
+volumes:
+  mysqldata:
