@@ -3,10 +3,6 @@ package com.vcm.crm.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -16,11 +12,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
-  private final JwtUtil jwtUtil;
+  private final JwtUtil jwtUtil;                   // Tu util con parse(...) e isValid(...)
   private final UserDetailsService userDetailsService;
 
   @Override
@@ -28,65 +30,35 @@ public class JwtFilter extends OncePerRequestFilter {
                                   HttpServletResponse response,
                                   FilterChain chain) throws ServletException, IOException {
 
-    // ¡IMPORTANTE! Esto NO incluye el context-path (/api). Perfecto para nuestros matchers.
-    final String path = request.getServletPath();
-    final String method = request.getMethod();
+    String header = request.getHeader("Authorization");
 
-    // 1) Deja pasar endpoints públicos sin tocar el contexto de seguridad.
-    if (isPublic(path, method)) {
-      chain.doFilter(request, response);
-      return;
-    }
+    if (header != null
+        && header.startsWith("Bearer ")
+        && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-    // 2) Requiere Authorization: Bearer <token> para el resto.
-    String auth = request.getHeader("Authorization");
-    if (auth == null || !auth.startsWith("Bearer ")) {
-      chain.doFilter(request, response);
-      return;
-    }
+      String token = header.substring(7);
 
-    String token = auth.substring(7);
-    try {
-      // JJWT 0.11.x -> parse() devuelve Jws<Claims>
-      Jws<Claims> jws = jwtUtil.parse(token);
-      String username = jws.getBody().getSubject();
+      try {
+        // Usa tu API actual de JwtUtil
+        Jws<Claims> jws = jwtUtil.parse(token);
+        String username = jws.getBody().getSubject();
 
-      if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-        UserDetails user = userDetailsService.loadUserByUsername(username);
-        if (jwtUtil.isValid(token, user)) {
-          UsernamePasswordAuthenticationToken authToken =
-              new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-          SecurityContextHolder.getContext().setAuthentication(authToken);
+        if (username != null) {
+          UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+          if (jwtUtil.isValid(token, userDetails)) {
+            UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
+            auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(auth);
+          }
         }
+      } catch (Exception ignored) {
+        // Token inválido/expirado: dejamos seguir sin auth; SecurityConfig decidirá 401/403
       }
-    } catch (Exception ignored) {
-      // Token inválido/expirado: no autenticamos; caerá en 401/403 si la ruta es privada.
     }
 
     chain.doFilter(request, response);
-  }
-
-  /**
-   * Rutas públicas (sin /api porque usamos getServletPath()).
-   */
-  private boolean isPublic(String path, String method) {
-    if (path == null) return false;
-
-    // ping y actuator
-    if (path.equals("/ping") || path.equals("/actuator") || path.startsWith("/actuator/")) {
-      return true;
-    }
-
-    // auth (login / refresh, etc.)
-    if (path.equals("/auth") || path.startsWith("/auth/")) {
-      return true;
-    }
-
-    // reset de contraseña (solo POST)
-    if ("POST".equalsIgnoreCase(method) && path.equals("/users/reset-password")) {
-      return true;
-    }
-
-    return false;
   }
 }

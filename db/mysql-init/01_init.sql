@@ -222,3 +222,54 @@ SELECT
     WHERE ur2.user_id = u.id
   ), '') AS roles
 FROM usuarios u;
+-- 1) Formularios de captura (catálogo)
+CREATE TABLE IF NOT EXISTS lead_forms (
+  id           INT AUTO_INCREMENT PRIMARY KEY,
+  name         VARCHAR(120) NOT NULL,
+  slug         VARCHAR(120) NOT NULL UNIQUE, -- para identificar desde webhooks
+  is_active    TINYINT(1) DEFAULT 1,
+  created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 2) Fuentes estándar (catálogo simple). Si prefieres, puedes omitir esta tabla
+--    y guardar source_code directamente en leads.
+CREATE TABLE IF NOT EXISTS lead_sources (
+  id        INT AUTO_INCREMENT PRIMARY KEY,
+  code      VARCHAR(50) NOT NULL UNIQUE,     -- ej: google-ads, facebook-ads, organic, referral, direct
+  name      VARCHAR(150) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 3) Leads capturados
+CREATE TABLE IF NOT EXISTS leads (
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  form_id         INT NOT NULL,
+  source_code     VARCHAR(50) NOT NULL,      -- referencia textual (google-ads, facebook-ads, etc.)
+  utm_source      VARCHAR(100) NULL,
+  utm_medium      VARCHAR(100) NULL,
+  utm_campaign    VARCHAR(150) NULL,
+  utm_term        VARCHAR(150) NULL,
+  utm_content     VARCHAR(150) NULL,
+  referrer        VARCHAR(255) NULL,
+  gclid           VARCHAR(100) NULL,
+  fbclid          VARCHAR(100) NULL,
+
+  full_name       VARCHAR(150) NULL,
+  email           VARCHAR(180) NULL,
+  phone           VARCHAR(50)  NULL,
+  message         TEXT NULL,
+
+  status          ENUM('NEW','QUALIFIED','WON','LOST') DEFAULT 'NEW',
+
+  client_id       INT NULL,
+  service_id      INT NULL,
+
+  raw_payload     JSON NULL,                 -- cuerpo bruto (por si el webhook trae campos adicionales)
+  created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  CONSTRAINT fk_lead_form   FOREIGN KEY (form_id)   REFERENCES lead_forms(id),
+  CONSTRAINT chk_source_nonempty CHECK (source_code <> '')
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX idx_leads_created_at ON leads(created_at);
+CREATE INDEX idx_leads_form       ON leads(form_id);
+CREATE INDEX idx_leads_source     ON leads(source_code);

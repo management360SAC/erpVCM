@@ -1,12 +1,33 @@
-import { ReactNode, useMemo, useState } from "react";
+// src/layout/AppLayout.tsx
+import type { ReactNode, JSX } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, NavLink } from "react-router-dom";
 import {
-  AppBar, Avatar, Box, Collapse, Container, Divider,
-  Drawer as MuiDrawer, FormControl, IconButton, InputLabel,
-  List, ListItem, ListItemButton, ListItemIcon, ListItemText,
-  MenuItem, Select, Toolbar, Typography, ListSubheader, Tooltip,
+  AppBar,
+  Avatar,
+  Box,
+  Collapse,
+  Container,
+  Divider,
+  Drawer as MuiDrawer,
+  FormControl,
+  IconButton,
+  InputLabel,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  ListSubheader,
+  MenuItem,
+  Select,
+  Toolbar,
+  Typography,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+
+// 🔔 Notificador global de alertas (nuevo)
+import GlobalAlertNotifier from "../components/GlobalAlertNotifier";
 
 // ====== Íconos ======
 import MenuIcon from "@mui/icons-material/Menu";
@@ -15,26 +36,21 @@ import SpaceDashboardOutlinedIcon from "@mui/icons-material/SpaceDashboardOutlin
 // Gestión
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
-import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
 import HomeRepairServiceOutlinedIcon from "@mui/icons-material/HomeRepairServiceOutlined";
 import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
 import RequestQuoteOutlinedIcon from "@mui/icons-material/RequestQuoteOutlined";
-import SavingsOutlinedIcon from "@mui/icons-material/SavingsOutlined";
 
 // Pipeline
 import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
-import GroupAddOutlinedIcon from "@mui/icons-material/GroupAddOutlined";
 import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
 
 // Cotizaciones
 import NoteAddOutlinedIcon from "@mui/icons-material/NoteAddOutlined";
-import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 
 // Operaciones/Postventa
 import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
 import ChecklistRtlOutlinedIcon from "@mui/icons-material/ChecklistRtlOutlined";
-import PaidOutlinedIcon from "@mui/icons-material/PaidOutlined";
 import TrackChangesOutlinedIcon from "@mui/icons-material/TrackChangesOutlined";
 import SentimentSatisfiedAltOutlinedIcon from "@mui/icons-material/SentimentSatisfiedAltOutlined";
 
@@ -51,13 +67,20 @@ import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
 
 // Integraciones/Usuarios
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
-import IntegrationInstructionsOutlinedIcon from "@mui/icons-material/IntegrationInstructionsOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import PeopleIcon from "@mui/icons-material/People";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
+
+// Menú de usuario (avatar superior derecha)
+import UserMenu from "../components/UserMenu";
 
 // ==== Layout tokens ====
 const drawerWidthOpen = 280;
 const drawerWidthClosed = 72;
+
+// Colores basados en el logo VCM
+const VCM_ORANGE = "#f57c00";
+const VCM_ORANGE_SOFT = "#fff7ed";
+const VCM_BG_SOFT = "#fff7ed";
 
 const openedMixin = (theme: any) => ({
   width: drawerWidthOpen,
@@ -67,6 +90,7 @@ const openedMixin = (theme: any) => ({
   }),
   overflowX: "hidden",
 });
+
 const closedMixin = (theme: any) => ({
   transition: theme.transitions.create("width", {
     easing: theme.transitions.easing.sharp,
@@ -76,25 +100,32 @@ const closedMixin = (theme: any) => ({
   width: drawerWidthClosed,
 });
 
-const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== "open" })(
-  ({ theme, open }) => ({
-    width: open ? drawerWidthOpen : drawerWidthClosed,
-    flexShrink: 0,
-    whiteSpace: "nowrap",
-    boxSizing: "border-box",
-    "& .MuiDrawer-paper": {
-      borderRight: "1px solid #eef2f7",
-      ...(open ? openedMixin(theme) : closedMixin(theme)),
-    },
-  })
-);
+const Drawer = styled(MuiDrawer, {
+  shouldForwardProp: (prop) => prop !== "open",
+})(({ theme, open }) => ({
+  width: open ? drawerWidthOpen : drawerWidthClosed,
+  flexShrink: 0,
+  whiteSpace: "nowrap",
+  boxSizing: "border-box",
+  "& .MuiDrawer-paper": {
+    borderRight: "1px solid #eef2f7",
+    backgroundColor: VCM_BG_SOFT,
+    ...(open ? openedMixin(theme) : closedMixin(theme)),
+  },
+}));
+
 const DrawerSpacer = styled("div")(({ theme }) => ({ ...theme.mixins.toolbar }));
 
 type NavItem = { text: string; path: string; icon: JSX.Element };
 type NavGroup = { key: string; title: string; icon: JSX.Element; items: NavItem[] };
 
 function Group({
-  title, icon, items, isOpen, onToggle, mini,
+  title,
+  icon,
+  items,
+  isOpen,
+  onToggle,
+  mini,
 }: {
   title: string;
   icon: JSX.Element;
@@ -105,30 +136,77 @@ function Group({
 }) {
   return (
     <>
+      {/* Cabecera del grupo */}
       <ListItem disablePadding sx={{ display: "block" }}>
         <ListItemButton
           onClick={onToggle}
-          sx={{ px: 1.5, minHeight: 44, justifyContent: mini ? "center" : "flex-start" }}
+          sx={{
+            px: 1.5,
+            minHeight: 44,
+            justifyContent: mini ? "center" : "flex-start",
+            borderRadius: 2,
+            transition: "0.2s ease",
+            cursor: "pointer",
+            "&:hover": {
+              bgcolor: VCM_ORANGE_SOFT,
+            },
+          }}
         >
-          <ListItemIcon sx={{ minWidth: 36, mr: mini ? 0 : 1 }}>{icon}</ListItemIcon>
-          {!mini && <ListItemText primary={title} primaryTypographyProps={{ fontWeight: 700 }} />}
+          <ListItemIcon
+            sx={{
+              minWidth: 36,
+              mr: mini ? 0 : 1,
+              color: "#6b7280",
+            }}
+          >
+            {icon}
+          </ListItemIcon>
+          {!mini && (
+            <ListItemText
+              primary={title}
+              primaryTypographyProps={{ fontWeight: 700 }}
+            />
+          )}
         </ListItemButton>
       </ListItem>
 
+      {/* Ítems del grupo */}
       <Collapse in={isOpen} timeout="auto" unmountOnExit>
         <List disablePadding dense>
           {items.map((it) => (
             <ListItem key={it.text} disablePadding sx={{ display: "block" }}>
-              <Tooltip title={mini ? it.text : ""} placement="right">
-                <ListItemButton
-                  component={NavLink}
-                  to={it.path}
-                  sx={{ pl: mini ? 1 : 4.5, pr: 1.5, minHeight: 40, justifyContent: mini ? "center" : "flex-start" }}
-                >
-                  <ListItemIcon sx={{ minWidth: 36, mr: mini ? 0 : 1 }}>{it.icon}</ListItemIcon>
-                  {!mini && <ListItemText primary={it.text} />}
-                </ListItemButton>
-              </Tooltip>
+              <ListItemButton
+                component={NavLink}
+                to={it.path}
+                sx={{
+                  pl: mini ? 1 : 4.5,
+                  pr: 1.5,
+                  minHeight: 40,
+                  justifyContent: mini ? "center" : "flex-start",
+                  borderRadius: 2,
+                  transition: "0.2s ease",
+                  cursor: "pointer",
+                  color: "#374151",
+                  "& .MuiListItemIcon-root": {
+                    color: "#6b7280",
+                  },
+                  "&:hover": {
+                    bgcolor: VCM_ORANGE_SOFT,
+                  },
+                  "&.active": {
+                    bgcolor: VCM_ORANGE,
+                    color: "#ffffff",
+                    "& .MuiListItemIcon-root": {
+                      color: "#ffffff",
+                    },
+                  },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 36, mr: mini ? 0 : 1 }}>
+                  {it.icon}
+                </ListItemIcon>
+                {!mini && <ListItemText primary={it.text} />}
+              </ListItemButton>
             </ListItem>
           ))}
         </List>
@@ -139,13 +217,12 @@ function Group({
 
 type Props = {
   children: ReactNode;
-  title?: string;        // título de la página
-  showFilters?: boolean; // muestra selects Año/Mes en AppBar
+  title?: string;
+  showFilters?: boolean;
 };
 
 export default function AppLayout({ children, title, showFilters }: Props) {
   const navigate = useNavigate();
-  // 👇 Leemos el username guardado en LoginPage
   const username = useMemo(
     () => (localStorage.getItem("username") ?? "usuario").toUpperCase(),
     []
@@ -163,13 +240,18 @@ export default function AppLayout({ children, title, showFilters }: Props) {
     navigate("/login", { replace: true });
   };
 
-  // ===== Menú =====
   const grupos: NavGroup[] = [
     {
       key: "inicio",
       title: "Inicio",
       icon: <SpaceDashboardOutlinedIcon />,
-      items: [{ text: "Dashboard", icon: <SpaceDashboardOutlinedIcon />, path: "/dashboard" }],
+      items: [
+        {
+          text: "Dashboard",
+          icon: <SpaceDashboardOutlinedIcon />,
+          path: "/dashboard",
+        },
+      ],
     },
     {
       key: "gestion",
@@ -177,11 +259,21 @@ export default function AppLayout({ children, title, showFilters }: Props) {
       icon: <WorkOutlineIcon />,
       items: [
         { text: "Clientes", icon: <PeopleAltOutlinedIcon />, path: "/clientes" },
-        { text: "Proveedores", icon: <LocalShippingOutlinedIcon />, path: "/proveedores" },
-        { text: "Productos", icon: <CategoryOutlinedIcon />, path: "/productos" },
-        { text: "Servicios", icon: <HomeRepairServiceOutlinedIcon />, path: "/servicios" },
-        { text: "Proyectos", icon: <WorkOutlineIcon />, path: "/proyectos" },
-        { text: "Gestión de Costos", icon: <SavingsOutlinedIcon />, path: "/costos" },
+        {
+          text: "Servicios",
+          icon: <HomeRepairServiceOutlinedIcon />,
+          path: "/servicios",
+        },
+        {
+          text: "Servicios Contratados",
+          icon: <HomeRepairServiceOutlinedIcon />,
+          path: "/servicios/contratados",
+        },
+        {
+          text: "Pagos",
+          icon: <LocalShippingOutlinedIcon />,
+          path: "/servicios/pagos",
+        },
       ],
     },
     {
@@ -189,10 +281,21 @@ export default function AppLayout({ children, title, showFilters }: Props) {
       title: "Pipeline Comercial",
       icon: <TimelineOutlinedIcon />,
       items: [
-        { text: "Embudo de Ventas", icon: <TimelineOutlinedIcon />, path: "/embudo" },
-        { text: "Leads", icon: <TrendingUpOutlinedIcon />, path: "/leads" },
-        { text: "Asignación de Leads", icon: <GroupAddOutlinedIcon />, path: "/leads/asignacion" },
-        { text: "Alertas y Recordatorios", icon: <NotificationsNoneOutlinedIcon />, path: "/alertas" },
+        {
+          text: "Embudo de Ventas",
+          icon: <TimelineOutlinedIcon />,
+          path: "/pipeline/embudoVentas",
+        },
+        {
+          text: "Leads",
+          icon: <TrendingUpOutlinedIcon />,
+          path: "/pipeline/leads",
+        },
+        {
+          text: "Alertas y Recordatorios",
+          icon: <NotificationsNoneOutlinedIcon />,
+          path: "/pipeline/alertas",
+        },
       ],
     },
     {
@@ -200,9 +303,16 @@ export default function AppLayout({ children, title, showFilters }: Props) {
       title: "Cotizaciones",
       icon: <RequestQuoteOutlinedIcon />,
       items: [
-        { text: "Nueva Cotización", icon: <NoteAddOutlinedIcon />, path: "/cotizaciones/nueva" },
-        { text: "Plantillas", icon: <DescriptionOutlinedIcon />, path: "/cotizaciones/plantillas" },
-        { text: "Historial", icon: <RequestQuoteOutlinedIcon />, path: "/cotizaciones" },
+        {
+          text: "Nueva Cotización",
+          icon: <NoteAddOutlinedIcon />,
+          path: "/cotizaciones/nueva",
+        },
+        {
+          text: "Historial",
+          icon: <RequestQuoteOutlinedIcon />,
+          path: "/cotizaciones",
+        },
       ],
     },
     {
@@ -210,11 +320,16 @@ export default function AppLayout({ children, title, showFilters }: Props) {
       title: "Operaciones & Postventa",
       icon: <FolderOpenOutlinedIcon />,
       items: [
-        { text: "Expedientes", icon: <FolderOpenOutlinedIcon />, path: "/operaciones/expedientes" },
-        { text: "Cronogramas/Checklist", icon: <ChecklistRtlOutlinedIcon />, path: "/operaciones/checklist" },
-        { text: "Facturación (Hitos)", icon: <PaidOutlinedIcon />, path: "/operaciones/facturacion" },
-        { text: "Seguimiento de Servicio", icon: <TrackChangesOutlinedIcon />, path: "/operaciones/seguimiento" },
-        { text: "Encuestas / NPS", icon: <SentimentSatisfiedAltOutlinedIcon />, path: "/operaciones/nps" },
+        {
+          text: "Seguimiento de Servicio",
+          icon: <TrackChangesOutlinedIcon />,
+          path: "/operaciones/seguimiento",
+        },
+        {
+          text: "Encuestas / NPS",
+          icon: <SentimentSatisfiedAltOutlinedIcon />,
+          path: "/operaciones/nps",
+        },
       ],
     },
     {
@@ -222,9 +337,21 @@ export default function AppLayout({ children, title, showFilters }: Props) {
       title: "Reportes & Analítica",
       icon: <AssessmentOutlinedIcon />,
       items: [
-        { text: "KPIs y Tableros", icon: <AssessmentOutlinedIcon />, path: "/reportes/kpis" },
-        { text: "Proyecciones", icon: <ShowChartOutlinedIcon />, path: "/reportes/proyecciones" },
-        { text: "Rentabilidad", icon: <MonetizationOnOutlinedIcon />, path: "/reportes/rentabilidad" },
+        {
+          text: "KPIs y Tableros",
+          icon: <AssessmentOutlinedIcon />,
+          path: "/reportes/kpis",
+        },
+        {
+          text: "Proyecciones",
+          icon: <ShowChartOutlinedIcon />,
+          path: "/reportes/proyecciones",
+        },
+        {
+          text: "Rentabilidad",
+          icon: <MonetizationOnOutlinedIcon />,
+          path: "/reportes/rentabilidad",
+        },
       ],
     },
     {
@@ -232,10 +359,26 @@ export default function AppLayout({ children, title, showFilters }: Props) {
       title: "Marketing & Escalabilidad",
       icon: <CampaignOutlinedIcon />,
       items: [
-        { text: "Campañas Email", icon: <MarkEmailUnreadOutlinedIcon />, path: "/marketing/email" },
-        { text: "Integración Ads/Redes", icon: <CampaignOutlinedIcon />, path: "/marketing/ads" },
-        { text: "Landing / Formularios", icon: <WebAssetOutlinedIcon />, path: "/marketing/landing" },
-        { text: "Fuentes de Lead", icon: <LocalOfferOutlinedIcon />, path: "/marketing/fuentes" },
+        {
+          text: "Campañas Email",
+          icon: <MarkEmailUnreadOutlinedIcon />,
+          path: "/marketing/email",
+        },
+        {
+          text: "Integración Ads/Redes",
+          icon: <CampaignOutlinedIcon />,
+          path: "/marketing/ads",
+        },
+        {
+          text: "Landing / Formularios",
+          icon: <WebAssetOutlinedIcon />,
+          path: "/marketing/landing",
+        },
+        {
+          text: "Fuentes de Lead",
+          icon: <LocalOfferOutlinedIcon />,
+          path: "/marketing/fuentes",
+        },
       ],
     },
     {
@@ -243,9 +386,16 @@ export default function AppLayout({ children, title, showFilters }: Props) {
       title: "Integraciones & Usuarios",
       icon: <AdminPanelSettingsOutlinedIcon />,
       items: [
-        { text: "Usuarios y Roles", icon: <AdminPanelSettingsOutlinedIcon />, path: "/seguridad/usuarios" },
-        { text: "Conexiones", icon: <IntegrationInstructionsOutlinedIcon />, path: "/integraciones" },
-        { text: "Configuración", icon: <SettingsOutlinedIcon />, path: "/configuracion" },
+        {
+          text: "Usuarios",
+          icon: <PeopleIcon />,
+          path: "/seguridad/usuarios",
+        },
+        {
+          text: "Roles",
+          icon: <AdminPanelSettingsOutlinedIcon />,
+          path: "/seguridad/roles",
+        },
       ],
     },
   ];
@@ -253,30 +403,58 @@ export default function AppLayout({ children, title, showFilters }: Props) {
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(
     Object.fromEntries(grupos.map((g) => [g.key, false]))
   );
-  const toggleGroup = (key: string) => setOpenGroups((s) => ({ ...s, [key]: !s[key] }));
+  const toggleGroup = (key: string) =>
+    setOpenGroups((s) => ({ ...s, [key]: !s[key] }));
 
   const drawerContent = (
-    <Box sx={{ height: "100%", display: "flex", flexDirection: "column", bgcolor: "#fff" }}>
+    <Box
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
       {/* Logo / Marca */}
-      <Box sx={{ px: 2, py: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
+      <Box
+        sx={{
+          width: "100%",
+          height: 110,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          pb: 1,
+        }}
+      >
         <img
-          src="/vcm-logo.svg"
+          src="/images/logo_sinFondo.png"
           alt="GRUPO VCM"
-          onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
-          style={{ height: 28 }}
+          onError={(e) =>
+            ((e.target as HTMLImageElement).style.display = "none")
+          }
+          style={{
+            height: mini ? 50 : 220,
+            width: "auto",
+            objectFit: "contain",
+            transition: "0.25s ease",
+          }}
         />
-        {!mini && <Typography fontWeight={800} noWrap>GRUPO VCM</Typography>}
       </Box>
+
       <Divider />
 
       {/* Menú */}
       <List
         sx={{ flex: 1, py: 0 }}
-        subheader={!mini ? (
-          <ListSubheader component="div" sx={{ bgcolor: "transparent", fontWeight: 800 }}>
-            Navegación
-          </ListSubheader>
-        ) : undefined}
+        subheader={
+          !mini ? (
+            <ListSubheader
+              component="div"
+              sx={{ bgcolor: "transparent", fontWeight: 800 }}
+            >
+              Navegación
+            </ListSubheader>
+          ) : undefined
+        }
       >
         {grupos.map((g) => (
           <Box key={g.key}>
@@ -292,21 +470,39 @@ export default function AppLayout({ children, title, showFilters }: Props) {
         ))}
       </List>
 
-      {/* Usuario */}
+      {/* Usuario pie del drawer */}
       <Box
         sx={{
-          px: 1.5, py: 1.5, display: "flex", alignItems: "center", gap: 1.5,
-          bgcolor: "rgba(2,132,199,0.06)", borderRadius: 2, mx: 1.5, mb: 1.5,
+          px: 1.5,
+          py: 1.5,
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          bgcolor: "rgba(255,255,255,0.9)",
+          borderRadius: 2,
+          mx: 1.5,
+          mb: 1.5,
+          border: "1px solid rgba(148,163,184,0.3)",
         }}
       >
-        <Avatar src="/public/images/user.png" alt={username} />
+        <Avatar src="/images/user.png" alt={username} />
         {!mini && (
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography fontWeight={700} noWrap>{username}</Typography>
-            <Typography variant="caption" color="text.secondary">ADMINISTRADOR</Typography>
+            <Typography fontWeight={700} noWrap>
+              {username}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              ADMINISTRADOR
+            </Typography>
           </Box>
         )}
-        <IconButton color="primary" onClick={onLogout}><PowerSettingsNewIcon /></IconButton>
+        <IconButton
+          color="primary"
+          onClick={onLogout}
+          sx={{ cursor: "pointer" }}
+        >
+          <PowerSettingsNewIcon />
+        </IconButton>
       </Box>
     </Box>
   );
@@ -318,46 +514,104 @@ export default function AppLayout({ children, title, showFilters }: Props) {
         position="fixed"
         elevation={0}
         sx={{
-          bgcolor: "#ffffff", color: "inherit", borderBottom: "1px solid #eef2f7",
-          pl: { sm: sideOpen ? `${drawerWidthOpen}px` : `${drawerWidthClosed}px` },
+          bgcolor: VCM_BG_SOFT,
+          color: "inherit",
+          borderBottom: "1px solid #f1c9a5",
+          pl: {
+            sm: sideOpen ? `${drawerWidthOpen}px` : `${drawerWidthClosed}px`,
+          },
         }}
       >
-        <Toolbar sx={{ gap: 2 }}>
+        <Toolbar
+          sx={{
+            gap: 2,
+            bgcolor: VCM_BG_SOFT,
+            minHeight: 64,
+          }}
+        >
           {/* Toggle desktop */}
-          <IconButton edge="start" color="inherit" onClick={() => setSideOpen(v => !v)} sx={{ display: { xs: "none", sm: "inline-flex" } }}>
-            <MenuIcon />
-          </IconButton>
-          {/* Toggle mobile */}
-          <IconButton edge="start" color="inherit" onClick={() => setMobileOpen(v => !v)} sx={{ display: { xs: "inline-flex", sm: "none" } }}>
+          <IconButton
+            edge="start"
+            color="inherit"
+            onClick={() => setSideOpen((v) => !v)}
+            sx={{ display: { xs: "none", sm: "inline-flex" }, cursor: "pointer" }}
+          >
             <MenuIcon />
           </IconButton>
 
-          {/* Filtros opcionales */}
+          {/* Toggle mobile */}
+          <IconButton
+            edge="start"
+            color="inherit"
+            onClick={() => setMobileOpen((v) => !v)}
+            sx={{
+              display: { xs: "inline-flex", sm: "none" },
+              cursor: "pointer",
+            }}
+          >
+            <MenuIcon />
+          </IconButton>
+
           {showFilters && (
             <>
               <FormControl size="small" sx={{ minWidth: 120 }}>
                 <InputLabel>Año</InputLabel>
-                <Select label="Año" value={year} onChange={(e)=>setYear(Number(e.target.value))}>
-                  {[year - 1, year, year + 1].map((y)=> <MenuItem key={y} value={y}>{y}</MenuItem>)}
+                <Select
+                  label="Año"
+                  value={year}
+                  onChange={(e) => setYear(Number(e.target.value))}
+                >
+                  {[year - 1, year, year + 1].map((y) => (
+                    <MenuItem key={y} value={y}>
+                      {y}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
+
               <FormControl size="small" sx={{ minWidth: 160 }}>
                 <InputLabel>Mes</InputLabel>
-                <Select label="Mes" value={month} onChange={(e)=>setMonth(Number(e.target.value))}>
-                  {["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
-                    .map((m,i)=><MenuItem key={m} value={i+1}>{m}</MenuItem>)}
+                <Select
+                  label="Mes"
+                  value={month}
+                  onChange={(e) => setMonth(Number(e.target.value))}
+                >
+                  {[
+                    "Enero",
+                    "Febrero",
+                    "Marzo",
+                    "Abril",
+                    "Mayo",
+                    "Junio",
+                    "Julio",
+                    "Agosto",
+                    "Septiembre",
+                    "Octubre",
+                    "Noviembre",
+                    "Diciembre",
+                  ].map((m, i) => (
+                    <MenuItem key={m} value={i + 1}>
+                      {m}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
             </>
           )}
 
           <Box sx={{ flex: 1 }} />
-          <Avatar src="/avatar.png" alt={username} />
+
+          {/* Menú de usuario (avatar superior derecha) */}
+          <UserMenu />
         </Toolbar>
       </AppBar>
 
       {/* Drawer permanente (desktop) */}
-      <Drawer variant="permanent" open={sideOpen} sx={{ display: { xs: "none", sm: "block" } }}>
+      <Drawer
+        variant="permanent"
+        open={sideOpen}
+        sx={{ display: { xs: "none", sm: "block" } }}
+      >
         <DrawerSpacer />
         {drawerContent}
       </Drawer>
@@ -368,7 +622,10 @@ export default function AppLayout({ children, title, showFilters }: Props) {
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
         ModalProps={{ keepMounted: true }}
-        sx={{ display: { xs: "block", sm: "none" }, "& .MuiDrawer-paper": { width: drawerWidthOpen } }}
+        sx={{
+          display: { xs: "block", sm: "none" },
+          "& .MuiDrawer-paper": { width: drawerWidthOpen },
+        }}
       >
         <DrawerSpacer />
         {drawerContent}
@@ -378,10 +635,17 @@ export default function AppLayout({ children, title, showFilters }: Props) {
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <DrawerSpacer />
         <Container maxWidth="lg" disableGutters>
-          {title && <Typography variant="h4" fontWeight={800} sx={{ mb: 2 }}>{title}</Typography>}
+          {title && (
+            <Typography variant="h4" fontWeight={800} sx={{ mb: 2 }}>
+              {title}
+            </Typography>
+          )}
           {children}
         </Container>
       </Box>
+
+      {/* 🔔 Notificador global de alertas, siempre abajo a la derecha */}
+      <GlobalAlertNotifier />
     </Box>
   );
 }

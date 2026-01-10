@@ -16,7 +16,7 @@ public class JwtUtil {
   private final SecretKey key;
 
   // TTL por defecto (ajústalos si quieres)
-  private static final long ACCESS_TTL_MS  = 15 * 60 * 1000L;           // 15 minutos
+  private static final long ACCESS_TTL_MS  = 60 * 60 * 1000L;          // 60 minutos
   private static final long REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000L;  // 7 días
 
   public JwtUtil(@Value("${app.jwt.secret}") String secret) {

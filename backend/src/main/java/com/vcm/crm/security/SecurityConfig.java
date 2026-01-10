@@ -15,49 +15,155 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.CorsConfigurationSource;
+
+import java.util.Arrays;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-  private final UserDetailsService userDetailsService;
-  private final JwtFilter jwtFilter; // <- asegúrate que JwtFilter tenga @Component
+    private final UserDetailsService userDetailsService;
+    private final JwtFilter jwtFilter;
 
-  @Bean
-  public BCryptPasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+    // ================================================
+    //               BEANS BÁSICOS
+    // ================================================
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-  @Bean
-  @Override
-  public AuthenticationManager authenticationManagerBean() throws Exception {
-    return super.authenticationManagerBean();
-  }
+    @Bean
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
+    }
 
-  @Override
-  protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-    auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-  }
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userDetailsService)
+            .passwordEncoder(passwordEncoder());
+    }
 
-  // SOLO estáticos (si los tuvieras). No ignores rutas de API aquí para que pase por el filtro JWT
-  @Override
-  public void configure(WebSecurity web) {
-    web.ignoring()
-      .antMatchers("/favicon.ico", "/css/**", "/js/**", "/images/**");
-  }
+    // ================================================
+    //       IGNORAR RECURSOS ESTÁTICOS
+    // ================================================
+    @Override
+    public void configure(WebSecurity web) {
+        web.ignoring()
+            .antMatchers(
+                "/favicon.ico",
+                "/css/**",
+                "/js/**",
+                "/images/**",
+                "/webjars/**",
+                "/error"
+            );
+    }
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
-    http
-      .csrf().disable()
-      .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // <- stateless
-      .and()
-      .authorizeRequests()
-        // IMPORTANTE: aquí NO se pone /api. El context-path /api ya se antepone solo.
-        .antMatchers("/auth/**").permitAll()
-        .antMatchers("/ping", "/actuator/**").permitAll()
-        .antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
-        .anyRequest().authenticated();
+    // ================================================
+    //         CONFIGURACIÓN PRINCIPAL
+    // ================================================
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
 
-    // Inserta el filtro JWT antes del UsernamePasswordAuthenticationFilter
-    http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-  }
+        http
+            .csrf().disable()
+            .cors().and()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .authorizeRequests()
+
+            // ENDPOINTS PÚBLICOS
+            .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+            .antMatchers("/auth/**", "/api/auth/**", "/ping", "/actuator/**").permitAll()
+            .antMatchers(HttpMethod.POST, "/api/users/reset-password").permitAll()
+
+            // NPS público
+            .antMatchers("/api/nps/public/**").permitAll()
+
+            // Leads público
+            .antMatchers("/api/leads/public/**").permitAll()
+
+            // Tests NPS
+            .antMatchers("/api/test/nps/**").permitAll()
+
+            // ENDPOINTS PROTEGIDOS
+            .antMatchers(HttpMethod.GET,  "/api/roles/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.POST, "/api/roles/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.PUT,  "/api/roles/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.DELETE, "/api/roles/**").hasRole("ADMIN")
+
+            .antMatchers(HttpMethod.GET, "/api/users/**").authenticated()
+            .antMatchers(HttpMethod.PUT, "/api/users/**").hasRole("ADMIN")
+
+            .antMatchers(HttpMethod.GET,    "/api/services/**").hasAnyRole("ADMIN","USER")
+            .antMatchers(HttpMethod.POST,   "/api/services/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.PUT,    "/api/services/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.DELETE, "/api/services/**").hasRole("ADMIN")
+
+            .antMatchers(HttpMethod.GET,    "/api/clients/*/services/**").hasAnyRole("ADMIN","USER")
+            .antMatchers(HttpMethod.POST,   "/api/clients/*/services/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.PUT,    "/api/clients/*/services/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.DELETE, "/api/clients/*/services/**").hasRole("ADMIN")
+
+            .antMatchers(HttpMethod.GET,  "/api/ops/service-tracking/**").hasAnyRole("ADMIN","USER")
+            .antMatchers(HttpMethod.POST, "/api/ops/service-tracking/**").hasAnyRole("ADMIN","USER")
+
+            .antMatchers(HttpMethod.GET,  "/api/ops/nps/**").hasAnyRole("ADMIN","USER")
+            .antMatchers(HttpMethod.POST, "/api/ops/nps/**").hasAnyRole("ADMIN","USER")
+
+            .antMatchers(HttpMethod.GET,  "/api/leads/stats").hasAnyRole("ADMIN","USER")
+            .antMatchers(HttpMethod.GET,  "/api/leads/**").hasAnyRole("ADMIN","USER")
+            .antMatchers(HttpMethod.POST, "/api/leads/**").hasAnyRole("ADMIN","USER")
+            .antMatchers(HttpMethod.PUT,  "/api/leads/**").hasAnyRole("ADMIN","USER")
+            .antMatchers(HttpMethod.DELETE, "/api/leads/**").hasRole("ADMIN")
+
+            .antMatchers("/api/contracted-services/**").hasAnyRole("ADMIN","USER")
+            .antMatchers("/api/billing/**").hasAnyRole("ADMIN","USER")
+
+            .antMatchers("/api/alerts-reminders/**").authenticated()
+
+            .anyRequest().authenticated()
+            .and()
+
+            // Filtro JWT
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+    }
+
+    // ================================================
+    //                      CORS
+    // ================================================
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+
+        CorsConfiguration config = new CorsConfiguration();
+
+        // 🔥 Cambiado: compatible con Spring viejo
+        config.addAllowedOrigin("*");
+
+        config.setAllowedMethods(Arrays.asList(
+            "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+        ));
+
+        config.setAllowedHeaders(Arrays.asList(
+            "Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"
+        ));
+
+        config.setExposedHeaders(Arrays.asList(
+            "Authorization", "Content-Type"
+        ));
+
+        config.setAllowCredentials(false);
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+
+        return source;
+    }
 }

@@ -10,3 +10,12 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <RouterProvider router={router} />
   </React.StrictMode>
 );
+// Log de errores JS “clásicos”
+window.addEventListener('error', (e) => {
+  console.error('🔥 window error:', e.error || e.message, e);
+});
+
+// Promesas rechazadas sin catch (fetch, async/await, etc.)
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('🔥 unhandledrejection:', e.reason || e);
+});

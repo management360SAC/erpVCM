@@ -21,6 +21,7 @@
     <lombok.version>1.18.32</lombok.version>
   </properties>
 
+  <!-- ====== TODAS las dependencias van SOLO aquí ====== -->
   <dependencies>
     <!-- Web / MVC -->
     <dependency>
@@ -40,6 +41,12 @@
       <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
 
+    <!-- Validaciones (@Valid) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
     <!-- MySQL -->
     <dependency>
       <groupId>mysql</groupId>
@@ -53,6 +60,7 @@
       <artifactId>jjwt-api</artifactId>
       <version>${jjwt.version}</version>
     </dependency>
+    
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-impl</artifactId>
@@ -65,7 +73,10 @@
       <version>${jjwt.version}</version>
       <scope>runtime</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-mail</artifactId>
+    </dependency>
     <!-- Lombok -->
     <dependency>
       <groupId>org.projectlombok</groupId>
@@ -74,7 +85,7 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- Tomcat lo provee el contenedor externo -->
+    <!-- Tomcat externo (WAR) -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-tomcat</artifactId>
@@ -87,11 +98,11 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
   </dependencies>
+  <!-- ====== FIN del bloque dependencies ====== -->
 
   <build>
     <finalName>ROOT</finalName>
     <plugins>
-      <!-- WAR sin web.xml -->
       <plugin>
         <artifactId>maven-war-plugin</artifactId>
         <version>3.3.2</version>
@@ -100,7 +111,6 @@
         </configuration>
       </plugin>
 
-      <!-- ⬇️ CLAVE: Lombok en compilación dentro del contenedor -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -119,7 +129,8 @@
         </configuration>
       </plugin>
 
-      <!-- Enforcer para bloquear mssql si hace falta -->
+      <!-- opcional: enforcer -->
+      <!--
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
@@ -135,7 +146,6 @@
                     <exclude>com.microsoft.sqlserver:mssql-jdbc</exclude>
                   </excludes>
                   <searchTransitive>true</searchTransitive>
-                  <message>No se permite mssql-jdbc en este proyecto.</message>
                 </bannedDependencies>
               </rules>
               <fail>true</fail>
@@ -143,6 +153,7 @@
           </execution>
         </executions>
       </plugin>
+      -->
     </plugins>
   </build>
 </project>

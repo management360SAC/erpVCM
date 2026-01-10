@@ -1,11 +1,14 @@
+// src/main/java/com/vcm/crm/CrmApplication.java
 package com.vcm.crm;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootApplication  // escanea com.vcm.crm y subpaquetes (controller, service, etc.)
+@SpringBootApplication
+@EnableScheduling
 public class CrmApplication extends SpringBootServletInitializer {
 
   @Override

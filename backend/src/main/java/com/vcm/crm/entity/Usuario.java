@@ -3,9 +3,11 @@ package com.vcm.crm.entity;
 import lombok.Data;
 
 import javax.persistence.*;
+// otros imports...
+import java.time.LocalDate;
 
 @Entity
-@Table(name = "usuarios") // ajusta si tu tabla se llama distinto
+@Table(name = "usuarios") 
 @Data
 public class Usuario {
 
@@ -30,4 +32,12 @@ public class Usuario {
 
   @Column(name = "is_active")
   private Boolean isActive;
+  private LocalDate fechaDeAlta;
+  private String dni;
+
+  @Column(length = 80)
+  private String cargo;
+
+  @Column(length = 20)
+  private String sexo;  
 }

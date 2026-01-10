@@ -35,10 +35,29 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import AppLayout from "../../layout/AppLayout";
 import { getUsers, type UserResponse } from "../../apis/user";
 
+// --- Compatibilidad: el backend puede mandar (nombre, rol) o (name, role).
+//    Extendemos el tipo para evitar errores de TS y leer ambos campos.
+type UIUser = UserResponse & {
+  id?: number;
+  username?: string;
+  email?: string;
+
+  // nombres "viejos"
+  nombre?: string;
+  rol?: string;
+  direccion?: string;
+  celular?: string;
+
+  // nombres "nuevos" alineados a tus DTO
+  name?: string;
+  role?: string;
+  active?: boolean;
+};
+
 export default function UsersList() {
   const nav = useNavigate();
 
-  const [rows, setRows] = useState<UserResponse[]>([]);
+  const [rows, setRows] = useState<UIUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [errMsg, setErrMsg] = useState<string | null>(null);
 
@@ -48,10 +67,10 @@ export default function UsersList() {
 
   // menú por fila
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [rowSel, setRowSel] = useState<UserResponse | null>(null);
+  const [rowSel, setRowSel] = useState<UIUser | null>(null);
   const menuOpen = Boolean(anchorEl);
 
-  const openMenu = (e: React.MouseEvent<HTMLElement>, row: UserResponse) => {
+  const openMenu = (e: React.MouseEvent<HTMLElement>, row: UIUser) => {
     setAnchorEl(e.currentTarget);
     setRowSel(row);
   };
@@ -65,8 +84,8 @@ export default function UsersList() {
       setErrMsg(null);
       setLoading(true);
       const data = await getUsers(); // usa axios con interceptor (Authorization)
-      setRows(data);
-    } catch (e: any) {
+      setRows((data || []) as UIUser[]);
+    } catch (_e) {
       setErrMsg("No se pudo cargar la lista de usuarios.");
       setRows([]);
     } finally {
@@ -80,7 +99,6 @@ export default function UsersList() {
     // Si no hay token, enviamos a /login
     const token =
       localStorage.getItem("accessToken") || localStorage.getItem("token");
-    console.log('token presente?', !!token, token?.slice(0, 20));
     if (!token) {
       nav("/login");
       return;
@@ -89,14 +107,26 @@ export default function UsersList() {
     fetchUsers();
   }, [nav]);
 
+  // Helpers para compatibilidad de campos
+  const getNombre = (u: UIUser) => u.nombre ?? u.name ?? "";
+  const getRol = (u: UIUser) => u.rol ?? u.role ?? "";
+  const getDireccion = (u: UIUser) => (u as any).direccion ?? "-";
+  const getCelular = (u: UIUser) => (u as any).celular ?? "-";
+
   const filtered = useMemo(
     () =>
-      rows.filter((r) =>
-        (r.nombre ?? "").toLowerCase().includes(q.toLowerCase()) ||
-        (r.email ?? "").toLowerCase().includes(q.toLowerCase()) ||
-        (r.username ?? "").toLowerCase().includes(q.toLowerCase()) ||
-        String(r.id ?? "").includes(q)
-      ),
+      rows.filter((r) => {
+        const nombre = getNombre(r).toLowerCase();
+        const email = (r.email ?? "").toLowerCase();
+        const username = (r.username ?? "").toLowerCase();
+        const term = q.toLowerCase();
+        return (
+          nombre.includes(term) ||
+          email.includes(term) ||
+          username.includes(term) ||
+          String(r.id ?? "").includes(q)
+        );
+      }),
     [rows, q]
   );
 
@@ -172,7 +202,7 @@ export default function UsersList() {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => {
-            // nav("/seguridad/usuarios/nuevo")
+            nav("/seguridad/usuarios/nuevo");
           }}
         >
           Nuevo Usuario
@@ -223,11 +253,11 @@ export default function UsersList() {
             {/* Datos */}
             {!loading &&
               filtered.map((r, idx) => (
-                <TableRow key={r.id} hover>
+                <TableRow key={r.id ?? idx} hover>
                   <TableCell>{idx + 1}</TableCell>
                   <TableCell sx={{ maxWidth: 260 }}>
                     <Typography fontWeight={700} sx={{ lineHeight: 1.15 }}>
-                      {r.nombre || "-"}
+                      {getNombre(r) || "-"}
                     </Typography>
                   </TableCell>
                   <TableCell>{r.username || "-"}</TableCell>
@@ -237,13 +267,13 @@ export default function UsersList() {
                     </Typography>
                   </TableCell>
                   <TableCell sx={{ maxWidth: 240 }}>
-                    <Typography color="text.secondary" noWrap title={r.direccion || "-"}>
-                      {r.direccion || "-"}
+                    <Typography color="text.secondary" noWrap title={getDireccion(r)}>
+                      {getDireccion(r)}
                     </Typography>
                   </TableCell>
-                  <TableCell>{r.celular || "-"}</TableCell>
+                  <TableCell>{getCelular(r)}</TableCell>
                   <TableCell>
-                    <Chip label={r.rol || "-"} size="small" />
+                    <Chip label={getRol(r) || "-"} size="small" />
                   </TableCell>
                   <TableCell align="right">
                     <IconButton onClick={(e) => openMenu(e, r)}>
@@ -271,7 +301,9 @@ export default function UsersList() {
       <Menu anchorEl={anchorEl} open={menuOpen} onClose={closeMenu}>
         <MenuItem
           onClick={() => {
-            // nav(`/seguridad/usuarios/${rowSel?.id}`)
+            if (rowSel?.id) {
+              nav(`/seguridad/usuarios/${rowSel.id}`);
+            }
             closeMenu();
           }}
         >
@@ -279,7 +311,7 @@ export default function UsersList() {
         </MenuItem>
         <MenuItem
           onClick={() => {
-            // acción de reset pass
+            // acción de reset pass (pendiente)
             closeMenu();
           }}
         >
@@ -288,7 +320,7 @@ export default function UsersList() {
         <Divider />
         <MenuItem
           onClick={() => {
-            // desactivar
+            // desactivar (pendiente)
             closeMenu();
           }}
         >
