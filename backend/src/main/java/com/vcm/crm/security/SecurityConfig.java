@@ -14,7 +14,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -29,9 +28,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
     private final JwtFilter jwtFilter;
 
-    // ================================================
-    //               BEANS BÁSICOS
-    // ================================================
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -49,9 +45,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .passwordEncoder(passwordEncoder());
     }
 
-    // ================================================
-    //       IGNORAR RECURSOS ESTÁTICOS
-    // ================================================
     @Override
     public void configure(WebSecurity web) {
         web.ignoring()
@@ -65,12 +58,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             );
     }
 
-    // ================================================
-    //         CONFIGURACIÓN PRINCIPAL
-    // ================================================
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-
         http
             .csrf().disable()
             .cors().and()
@@ -78,89 +67,74 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .authorizeRequests()
 
-            // ENDPOINTS PÚBLICOS
+            // públicos
             .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            .antMatchers("/auth/**", "/api/auth/**", "/ping", "/actuator/**").permitAll()
-            .antMatchers(HttpMethod.POST, "/api/users/reset-password").permitAll()
+            .antMatchers("/auth/**", "/ping", "/actuator/**").permitAll()
+            .antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
 
-            // NPS público
-            .antMatchers("/api/nps/public/**").permitAll()
+            .antMatchers("/nps/public/**").permitAll()
+            .antMatchers("/leads/public/**").permitAll()
+            .antMatchers("/test/nps/**").permitAll()
 
-            // Leads público
-            .antMatchers("/api/leads/public/**").permitAll()
+            // protegidos
+            .antMatchers(HttpMethod.GET, "/roles/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.POST, "/roles/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.PUT, "/roles/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.DELETE, "/roles/**").hasRole("ADMIN")
 
-            // Tests NPS
-            .antMatchers("/api/test/nps/**").permitAll()
+            .antMatchers(HttpMethod.GET, "/users/**").authenticated()
+            .antMatchers(HttpMethod.PUT, "/users/**").hasRole("ADMIN")
 
-            // ENDPOINTS PROTEGIDOS
-            .antMatchers(HttpMethod.GET,  "/api/roles/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.POST, "/api/roles/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.PUT,  "/api/roles/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.DELETE, "/api/roles/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.GET, "/services/**").hasAnyRole("ADMIN", "USER")
+            .antMatchers(HttpMethod.POST, "/services/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.PUT, "/services/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.DELETE, "/services/**").hasRole("ADMIN")
 
-            .antMatchers(HttpMethod.GET, "/api/users/**").authenticated()
-            .antMatchers(HttpMethod.PUT, "/api/users/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.GET, "/clients/*/services/**").hasAnyRole("ADMIN", "USER")
+            .antMatchers(HttpMethod.POST, "/clients/*/services/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.PUT, "/clients/*/services/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.DELETE, "/clients/*/services/**").hasRole("ADMIN")
 
-            .antMatchers(HttpMethod.GET,    "/api/services/**").hasAnyRole("ADMIN","USER")
-            .antMatchers(HttpMethod.POST,   "/api/services/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.PUT,    "/api/services/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.DELETE, "/api/services/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.GET, "/ops/service-tracking/**").hasAnyRole("ADMIN", "USER")
+            .antMatchers(HttpMethod.POST, "/ops/service-tracking/**").hasAnyRole("ADMIN", "USER")
 
-            .antMatchers(HttpMethod.GET,    "/api/clients/*/services/**").hasAnyRole("ADMIN","USER")
-            .antMatchers(HttpMethod.POST,   "/api/clients/*/services/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.PUT,    "/api/clients/*/services/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.DELETE, "/api/clients/*/services/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.GET, "/ops/nps/**").hasAnyRole("ADMIN", "USER")
+            .antMatchers(HttpMethod.POST, "/ops/nps/**").hasAnyRole("ADMIN", "USER")
 
-            .antMatchers(HttpMethod.GET,  "/api/ops/service-tracking/**").hasAnyRole("ADMIN","USER")
-            .antMatchers(HttpMethod.POST, "/api/ops/service-tracking/**").hasAnyRole("ADMIN","USER")
+            .antMatchers(HttpMethod.GET, "/leads/stats").hasAnyRole("ADMIN", "USER")
+            .antMatchers(HttpMethod.GET, "/leads/**").hasAnyRole("ADMIN", "USER")
+            .antMatchers(HttpMethod.POST, "/leads/**").hasAnyRole("ADMIN", "USER")
+            .antMatchers(HttpMethod.PUT, "/leads/**").hasAnyRole("ADMIN", "USER")
+            .antMatchers(HttpMethod.DELETE, "/leads/**").hasRole("ADMIN")
 
-            .antMatchers(HttpMethod.GET,  "/api/ops/nps/**").hasAnyRole("ADMIN","USER")
-            .antMatchers(HttpMethod.POST, "/api/ops/nps/**").hasAnyRole("ADMIN","USER")
+            .antMatchers("/contracted-services/**").hasAnyRole("ADMIN", "USER")
+            .antMatchers("/billing/**").hasAnyRole("ADMIN", "USER")
+            .antMatchers("/alerts-reminders/**").authenticated()
 
-            .antMatchers(HttpMethod.GET,  "/api/leads/stats").hasAnyRole("ADMIN","USER")
-            .antMatchers(HttpMethod.GET,  "/api/leads/**").hasAnyRole("ADMIN","USER")
-            .antMatchers(HttpMethod.POST, "/api/leads/**").hasAnyRole("ADMIN","USER")
-            .antMatchers(HttpMethod.PUT,  "/api/leads/**").hasAnyRole("ADMIN","USER")
-            .antMatchers(HttpMethod.DELETE, "/api/leads/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.GET, "/dashboard/**").authenticated()
+            .antMatchers(HttpMethod.GET, "/proyecciones/**").authenticated()
+            .antMatchers(HttpMethod.POST, "/proyecciones/**").hasAnyRole("ADMIN", "MANAGER")
+            .antMatchers(HttpMethod.DELETE, "/proyecciones/**").hasAnyRole("ADMIN", "MANAGER")
 
-            .antMatchers("/api/contracted-services/**").hasAnyRole("ADMIN","USER")
-            .antMatchers("/api/billing/**").hasAnyRole("ADMIN","USER")
+            .antMatchers("/marketing/**").hasAnyRole("ADMIN", "USER", "MANAGER")
+            .antMatchers("/analytics/**").hasAnyRole("ADMIN", "USER", "MANAGER", "OPERADOR")
 
-            .antMatchers("/api/alerts-reminders/**").authenticated()
-
-            // Dashboard & Proyecciones
-            .antMatchers(HttpMethod.GET,    "/api/dashboard/**").authenticated()
-            .antMatchers(HttpMethod.GET,    "/api/proyecciones/**").authenticated()
-            .antMatchers(HttpMethod.POST,   "/api/proyecciones/**").hasAnyRole("ADMIN","MANAGER")
-            .antMatchers(HttpMethod.DELETE, "/api/proyecciones/**").hasAnyRole("ADMIN","MANAGER")
-
-            // Marketing
-            .antMatchers("/api/marketing/**").hasAnyRole("ADMIN","USER","MANAGER")
-
-            // Analytics
-            .antMatchers("/api/analytics/**").hasAnyRole("ADMIN","USER","MANAGER","OPERADOR")
-
-            // Reportes & Analítica
-            .antMatchers(HttpMethod.GET, "/api/reportes/auditoria/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.GET, "/api/reportes/**").hasAnyRole("ADMIN","USER","MANAGER","OPERADOR")
+            .antMatchers(HttpMethod.GET, "/reportes/auditoria/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.GET, "/reportes/**").hasAnyRole("ADMIN", "USER", "MANAGER", "OPERADOR")
 
             .anyRequest().authenticated()
             .and()
-
-            // Filtro JWT
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
-    // ================================================
-    //                      CORS
-    // ================================================
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-
         CorsConfiguration config = new CorsConfiguration();
 
-        // 🔥 Cambiado: compatible con Spring viejo
-        config.addAllowedOrigin("*");
+        config.setAllowedOrigins(Arrays.asList(
+            "http://95.216.168.66:5173",
+            "http://95.216.168.66"
+        ));
 
         config.setAllowedMethods(Arrays.asList(
             "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
