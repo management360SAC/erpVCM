@@ -136,7 +136,7 @@ export default function NpsDashboard() {
   return (
     <AppLayout title="Encuestas / NPS">
       {/* Encabezado */}
-      <Paper elevation={0} sx={{ p: 2.5, mb: 2, borderRadius: 3, border: "1px solid #eef2f7", background: "#eef6ff" }}>
+      <Paper elevation={0} sx={{ p: 2.5, mb: 2, borderRadius: 3, border: "1px solid #fed7aa", background: "#fff7ed" }}>
         <Typography variant="h5" fontWeight={800}>Encuestas / NPS</Typography>
         <Typography variant="body2" color="text.secondary">
           Visualiza el rendimiento del servicio según las respuestas de tus clientes.
@@ -239,9 +239,9 @@ export default function NpsDashboard() {
         )}
         <Box sx={{ p: 2 }}>
           <Typography fontWeight={700} sx={{ mb: 1 }}>Respuestas recientes</Typography>
-          <Table size="small" aria-disabled={loading}>
+          <Table size="medium" aria-disabled={loading}>
             <TableHead>
-              <TableRow>
+              <TableRow sx={{ "& th": { fontWeight: 700 } }}>
                 <TableCell>Fecha</TableCell>
                 <TableCell>Cliente</TableCell>
                 <TableCell>Servicio</TableCell>

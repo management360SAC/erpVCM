@@ -49,6 +49,9 @@ public class BillingService {
         return String.format("PAY-%d-%04d", y, seq.getLastNumber());
     }
 
+    // =========================================================
+    //  REGISTRAR PAGO NORMAL (admite también pagos parciales)
+    // =========================================================
     @Transactional
     public Payment registerPayment(Long invoiceId, BigDecimal amount,
                                    String method, String ref, String notes,
@@ -56,7 +59,7 @@ public class BillingService {
                                    Long userId) throws Exception {
 
         Invoice inv = invoiceRepo.findById(invoiceId)
-                .orElseThrow(() -> new IllegalArgumentException("Factura no existe"));
+                .orElseThrow(() -> new IllegalArgumentException("Factura no existe: " + invoiceId));
 
         String number = nextPaymentNumber();
         Path dir = Paths.get(paymentsRoot, String.valueOf(Year.now().getValue()));
@@ -77,6 +80,7 @@ public class BillingService {
         p.setRefCode(ref);
         p.setNotes(notes);
         p.setPaidAt(LocalDateTime.now());
+        p.setStatus("VALIDO");
         if (filePath != null) {
             p.setFileName(original);
             p.setFilePath(filePath.toString());
@@ -86,8 +90,56 @@ public class BillingService {
         p.setCreatedBy(userId);
         paymentRepo.save(p);
 
-        // Recalcular pagos y actualizar estado de la factura
-        BigDecimal pagado = paymentRepo.sumByInvoiceId(invoiceId);
+        // Recalcular con pagos VÁLIDOS únicamente
+        recalcInvoiceAndService(inv);
+
+        return p;
+    }
+
+    // =========================================================
+    //  CORREGIR UN PAGO EXISTENTE
+    //  - Marca el original como CORREGIDO
+    //  - Crea un nuevo pago VALIDO con el monto correcto
+    // =========================================================
+    @Transactional
+    public Payment correctPayment(Long originalPaymentId,
+                                  BigDecimal newAmount,
+                                  String method, String ref, String notes,
+                                  String correctionReason,
+                                  byte[] bytes, String originalFilename, String ctype,
+                                  Long userId) throws Exception {
+
+        Payment orig = paymentRepo.findById(originalPaymentId)
+                .orElseThrow(() -> new IllegalArgumentException("Pago no encontrado: " + originalPaymentId));
+
+        if (!"VALIDO".equals(orig.getStatus())) {
+            throw new IllegalArgumentException("Solo se pueden corregir pagos en estado VALIDO.");
+        }
+
+        // 1. Marcar el pago original como CORREGIDO
+        orig.setStatus("CORREGIDO");
+        orig.setCorrectionReason(correctionReason != null ? correctionReason : "Corrección sin motivo especificado");
+        paymentRepo.save(orig);
+
+        // 2. Registrar el pago correcto como nuevo registro
+        Payment corrected = registerPayment(orig.getInvoiceId(), newAmount, method, ref, notes,
+                bytes, originalFilename, ctype, userId);
+
+        // 3. Enlazar corrección con el original
+        corrected.setCorrectionOf(originalPaymentId);
+        paymentRepo.save(corrected);
+
+        return corrected;
+    }
+
+    // =========================================================
+    //  RECALCULAR ESTADO DE FACTURA Y SERVICIO CONTRATADO
+    // =========================================================
+    @Transactional
+    public void recalcInvoiceAndService(Invoice inv) {
+        // Solo sumar pagos VÁLIDOS
+        BigDecimal pagado = paymentRepo.sumValidByInvoiceId(inv.getId());
+
         if (inv.getTotal() != null) {
             if (pagado.compareTo(inv.getTotal()) >= 0) {
                 inv.setStatus("PAGADA_TOTAL");
@@ -99,10 +151,11 @@ public class BillingService {
         }
         invoiceRepo.save(inv);
 
-        // Actualizar ejes del Servicio Contratado (Cobro) y facturación
+        // Actualizar estado del servicio contratado
         if (inv.getContractedServiceId() != null) {
-            ContractedService cs = csRepo.findById(inv.getContractedServiceId()).orElse(null);
-            if (cs != null) {
+            Optional<ContractedService> csOpt = csRepo.findById(inv.getContractedServiceId());
+            if (csOpt.isPresent()) {
+                ContractedService cs = csOpt.get();
                 switch (inv.getStatus()) {
                     case "PAGADA_TOTAL":
                         cs.setCollectionStatus(CollectionStatus.COBRADO);
@@ -114,29 +167,20 @@ public class BillingService {
                         cs.setCollectionStatus(CollectionStatus.PENDIENTE_COBRO);
                 }
                 csRepo.save(cs);
-
-                // ✅ asegurar que el eje "Facturación" quede FACTURADO si hay facturas del servicio
                 recomputeBillingForService(cs.getId());
             }
         }
-        return p;
     }
 
-    /** Marca FACTURADO si existe alguna factura (EMITIDA/PARCIAL/TOTAL) del servicio. */
+    /** Marca FACTURADO si existe alguna factura para el servicio */
     @Transactional
     public void recomputeBillingForService(Long csId) {
         if (csId == null) return;
-        
-        // ✅ CORREGIDO: No usar "var" en Java 8
         Optional<ContractedService> csOpt = csRepo.findById(csId);
         if (!csOpt.isPresent()) return;
         ContractedService cs = csOpt.get();
-
-        // Opción simple y rápida:
         boolean tieneFactura = invoiceRepo.existsByContractedServiceId(csId);
-
         if (tieneFactura) {
-            // ✅ CORREGIDO: Usar FACTURADO_TOTAL en lugar de FACTURADO
             cs.setBillingStatus(ContractedService.BillingStatus.FACTURADO_TOTAL);
             csRepo.save(cs);
         }

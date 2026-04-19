@@ -49,6 +49,18 @@ public class Payment {
   @Column(nullable = false, updatable = false)
   private LocalDateTime createdAt = LocalDateTime.now();
 
+  /** VALIDO (por defecto) | CORREGIDO | ANULADO */
+  @Column(nullable = false, length = 20)
+  private String status = "VALIDO";
+
+  /** ID del pago original que este registro corrige (null si no es corrección) */
+  @Column
+  private Long correctionOf;
+
+  /** Motivo ingresado al corregir un pago */
+  @Column(columnDefinition = "TEXT")
+  private String correctionReason;
+
   public Payment() {}
 
   // ===== Getters & Setters =====
@@ -93,4 +105,13 @@ public class Payment {
 
   public LocalDateTime getCreatedAt() { return createdAt; }
   public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+  public String getStatus() { return status; }
+  public void setStatus(String status) { this.status = status; }
+
+  public Long getCorrectionOf() { return correctionOf; }
+  public void setCorrectionOf(Long correctionOf) { this.correctionOf = correctionOf; }
+
+  public String getCorrectionReason() { return correctionReason; }
+  public void setCorrectionReason(String correctionReason) { this.correctionReason = correctionReason; }
 }

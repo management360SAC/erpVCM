@@ -139,8 +139,8 @@ export default function UsersList() {
           p: 2.5,
           mb: 2,
           borderRadius: 3,
-          border: "1px solid #eef2f7",
-          background: "#eef6ff",
+          border: "1px solid #fed7aa",
+          background: "#fff7ed",
         }}
       >
         <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>

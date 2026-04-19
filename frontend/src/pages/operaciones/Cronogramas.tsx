@@ -172,8 +172,8 @@ export default function Cronogramas() {
           p: 2.5,
           mb: 2,
           borderRadius: 3,
-          border: "1px solid #eef2f7",
-          background: "#eef6ff",
+          border: "1px solid #fed7aa",
+          background: "#fff7ed",
         }}
       >
         <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -348,7 +348,7 @@ export default function Cronogramas() {
 
         <TablePagination
           component="div"
-          rowsPerPageOptions={[5, 10, 20, 50]}
+          rowsPerPageOptions={[10, 20, 50]}
           count={totalElements}
           rowsPerPage={rowsPerPage}
           page={page}
@@ -357,6 +357,7 @@ export default function Cronogramas() {
             setRowsPerPage(parseInt(e.target.value, 10));
             setPage(0);
           }}
+          labelRowsPerPage="Filas:"
         />
       </TableContainer>
     </AppLayout>

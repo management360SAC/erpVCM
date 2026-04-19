@@ -865,7 +865,7 @@ export default function Leads() {
 
         <TablePagination
           component="div"
-          rowsPerPageOptions={[5, 10, 20, 50]}
+          rowsPerPageOptions={[10, 20, 50]}
           count={totalElements}
           rowsPerPage={rowsPerPage}
           page={page}
@@ -874,6 +874,7 @@ export default function Leads() {
             setRowsPerPage(parseInt(e.target.value, 10));
             setPage(0);
           }}
+          labelRowsPerPage="Filas:"
         />
       </TableContainer>
 

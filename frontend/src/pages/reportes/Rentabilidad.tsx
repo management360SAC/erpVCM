@@ -89,7 +89,7 @@ export default function Rentabilidad() {
 
   return (
     <AppLayout title="Rentabilidad">
-      <Paper elevation={0} sx={{ p: 2.5, mb: 2, borderRadius: 3, border: "1px solid #eef2f7", background: "#eef6ff" }}>
+      <Paper elevation={0} sx={{ p: 2.5, mb: 2, borderRadius: 3, border: "1px solid #fed7aa", background: "#fff7ed" }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Box>
             <Typography variant="h5" fontWeight={800}>Rentabilidad</Typography>
@@ -135,9 +135,9 @@ export default function Rentabilidad() {
       {!loading && (
         <Paper elevation={0} sx={{ border: "1px solid #eef2f7", borderRadius: 3 }}>
           <TableContainer>
-            <Table size="small">
+            <Table size="medium">
               <TableHead>
-                <TableRow>
+                <TableRow sx={{ "& th": { fontWeight: 700 } }}>
                   <TableCell>#</TableCell>
                   <TableCell>Proyecto</TableCell>
                   <TableCell>Cliente</TableCell>
@@ -186,12 +186,13 @@ export default function Rentabilidad() {
           </TableContainer>
           <TablePagination
             component="div"
-            rowsPerPageOptions={[5, 10, 20, 50]}
+            rowsPerPageOptions={[10, 20, 50]}
             count={filtered.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={(_, p)=>setPage(p)}
             onRowsPerPageChange={(e)=>{ setRowsPerPage(parseInt(e.target.value,10)); setPage(0); }}
+            labelRowsPerPage="Filas:"
           />
         </Paper>
       )}

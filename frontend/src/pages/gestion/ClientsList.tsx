@@ -24,6 +24,7 @@ import {
   TableCell,
   TableContainer,
   TableHead,
+  TablePagination,
   TableRow,
   TextField,
   Tooltip,
@@ -57,6 +58,8 @@ export default function ClientsList() {
   const [loading, setLoading] = useState(true);
   const [errMsg, setErrMsg] = useState<string | null>(null);
   const [q, setQ] = useState("");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   // menú por fila
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -253,7 +256,7 @@ export default function ClientsList() {
           placeholder="Buscar Cliente"
           size="small"
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => { setQ(e.target.value); setPage(0); }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -316,7 +319,6 @@ export default function ClientsList() {
               <TableCell>Correo</TableCell>
               <TableCell>Teléfono</TableCell>
               <TableCell>Sector</TableCell>
-              <TableCell>Tamaño</TableCell>
               <TableCell>Servicios</TableCell>
               <TableCell align="right" width={72}>
                 Acciones
@@ -327,7 +329,7 @@ export default function ClientsList() {
           <TableBody>
             {loading && (
               <TableRow>
-                <TableCell colSpan={9}>
+                <TableCell colSpan={8}>
                   <Box sx={{ py: 6, textAlign: "center" }}>
                     <CircularProgress size={24} />
                   </Box>
@@ -336,13 +338,13 @@ export default function ClientsList() {
             )}
 
             {!loading &&
-              filtered.map((r, i) => {
+              filtered.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((r, i) => {
                 const cnt = r.id ? svcMap[r.id] : undefined;
                 const total = (cnt?.a ?? 0) + (cnt?.i ?? 0);
 
                 return (
                   <TableRow key={r.id ?? i} hover>
-                    <TableCell>{i + 1}</TableCell>
+                    <TableCell>{page * rowsPerPage + i + 1}</TableCell>
                     <TableCell>
                       <Typography fontWeight={700}>
                         {r.legalName || "-"}
@@ -361,9 +363,6 @@ export default function ClientsList() {
                     <TableCell>{r.phone || "-"}</TableCell>
                     <TableCell>
                       <Chip size="small" label={r.sectorId ?? "-"} />
-                    </TableCell>
-                    <TableCell>
-                      <Chip size="small" label={r.sizeId ?? "-"} />
                     </TableCell>
 
                     {/* Botón que abre modal con servicios */}
@@ -404,7 +403,7 @@ export default function ClientsList() {
 
             {!loading && filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={9}>
+                <TableCell colSpan={8}>
                   <Box
                     sx={{
                       py: 6,
@@ -419,6 +418,16 @@ export default function ClientsList() {
             )}
           </TableBody>
         </Table>
+        <TablePagination
+          component="div"
+          count={filtered.length}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          rowsPerPageOptions={[10, 20, 50]}
+          onPageChange={(_, p) => setPage(p)}
+          onRowsPerPageChange={(e) => { setRowsPerPage(parseInt(e.target.value, 10)); setPage(0); }}
+          labelRowsPerPage="Filas:"
+        />
       </TableContainer>
 
       {/* Menú contextual por fila */}

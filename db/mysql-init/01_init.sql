@@ -273,3 +273,57 @@ CREATE TABLE IF NOT EXISTS leads (
 CREATE INDEX idx_leads_created_at ON leads(created_at);
 CREATE INDEX idx_leads_form       ON leads(form_id);
 CREATE INDEX idx_leads_source     ON leads(source_code);
+
+-- Embudo de ventas (deals / oportunidades)
+CREATE TABLE IF NOT EXISTS deal (
+  id             BIGINT NOT NULL AUTO_INCREMENT,
+  org_id         INT NOT NULL DEFAULT 1,
+  client_id      INT NULL,
+  lead_id        BIGINT NULL,
+  title          VARCHAR(200) NOT NULL,
+  amount         DECIMAL(12,2) NULL,
+  stage          VARCHAR(30) NOT NULL DEFAULT 'PROSPECTO',
+  status         VARCHAR(20) NOT NULL DEFAULT 'OPEN',
+  owner_user_id  BIGINT NULL,
+  created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY fk_deal_client (client_id),
+  KEY fk_deal_lead (lead_id),
+  CONSTRAINT fk_deal_client FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE SET NULL,
+  CONSTRAINT fk_deal_lead FOREIGN KEY (lead_id) REFERENCES marketing_lead (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =====================================================================
+-- MÓDULO REPORTES & ANALÍTICA
+-- =====================================================================
+
+-- Proyecciones manuales de ingresos (meta por mes o anual)
+CREATE TABLE IF NOT EXISTS manual_projections (
+  id         BIGINT AUTO_INCREMENT PRIMARY KEY,
+  org_id     INT            NOT NULL,
+  year_val   SMALLINT       NOT NULL,
+  month_val  TINYINT        NULL,    -- 1-12; NULL = proyección anual
+  amount     DECIMAL(14,2)  NOT NULL,
+  created_by BIGINT         NULL,
+  created_at DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME       NULL     ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY UQ_mp_org_year_month (org_id, year_val, month_val),
+  KEY IX_mp_org_year (org_id, year_val)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Auditoría de generación de reportes (quién, cuándo, qué filtros)
+CREATE TABLE IF NOT EXISTS report_audit_log (
+  id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+  org_id       INT NOT NULL,
+  user_id      INT NULL,
+  report_key   VARCHAR(50) NOT NULL,
+  filtros_json JSON NULL,
+  created_at   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY IX_ral_org        (org_id),
+  KEY IX_ral_user       (user_id),
+  KEY IX_ral_report_key (report_key),
+  KEY IX_ral_created_at (created_at),
+  CONSTRAINT FK_ral_org  FOREIGN KEY (org_id)  REFERENCES org(id)      ON DELETE CASCADE,
+  CONSTRAINT FK_ral_user FOREIGN KEY (user_id) REFERENCES usuarios(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -344,3 +344,209 @@ body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sa
 .delay-2 { animation-delay: 0.4s; }
 .delay-3 { animation-delay: 0.6s; }
 
+/* =====================================================================
+   VCM SISTEMA — MEJORAS VISUALES GLOBALES  (no afecta login)
+   ===================================================================== */
+
+/* ── Scrollbar elegante ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* ── Transición base suave para todos los elementos interactivos ── */
+button, a, [role="button"] {
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+/* ── MUI Button — hover / active / disabled ── */
+.MuiButton-root {
+  transition: transform 0.12s ease, box-shadow 0.18s ease, filter 0.18s ease !important;
+  border-radius: 10px !important;
+}
+.MuiButton-contained:not(.Mui-disabled):hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,.16) !important;
+  filter: brightness(1.04) !important;
+}
+.MuiButton-outlined:not(.Mui-disabled):hover {
+  transform: translateY(-1px) !important;
+}
+.MuiButton-root:not(.Mui-disabled):active {
+  transform: translateY(0) scale(0.985) !important;
+}
+.MuiButton-root.Mui-disabled {
+  opacity: 0.5 !important;
+}
+
+/* ── MUI OutlinedInput — focus ring elegante ── */
+.MuiOutlinedInput-root {
+  transition: box-shadow 0.18s ease !important;
+  border-radius: 10px !important;
+}
+.MuiOutlinedInput-root.Mui-focused:not(.Mui-error) {
+  box-shadow: 0 0 0 3px rgba(13,71,161,0.10) !important;
+}
+.MuiOutlinedInput-root.Mui-error.Mui-focused {
+  box-shadow: 0 0 0 3px rgba(214,40,40,0.10) !important;
+}
+
+/* ── MUI Paper / Card — sombras consistentes ── */
+.MuiPaper-root {
+  transition: box-shadow 0.2s ease !important;
+}
+.MuiPaper-elevation1 {
+  box-shadow: 0 1px 6px rgba(0,0,0,0.06), 0 2px 14px rgba(0,0,0,0.04) !important;
+}
+.MuiPaper-elevation2 {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07), 0 4px 18px rgba(0,0,0,0.05) !important;
+}
+.MuiPaper-elevation3 {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.05) !important;
+}
+
+/* ── MUI Table — hover suave y spacing ── */
+.MuiTableRow-root.MuiTableRow-hover:hover > .MuiTableCell-root {
+  background-color: #f8faff !important;
+  transition: background-color 0.15s ease !important;
+}
+.MuiTableCell-root {
+  border-bottom-color: #f0f2f7 !important;
+}
+.MuiTableCell-head {
+  letter-spacing: 0.015em;
+  font-size: 0.8rem !important;
+  text-transform: uppercase;
+  color: #6b7280 !important;
+}
+
+/* ── MUI Select ── */
+.MuiSelect-outlined {
+  border-radius: 10px !important;
+}
+
+/* ── MUI Chip — transición suave ── */
+.MuiChip-root {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease !important;
+}
+
+/* ── MUI MenuItem ── */
+.MuiMenuItem-root {
+  border-radius: 8px !important;
+  margin: 1px 4px !important;
+  transition: background-color 0.15s ease !important;
+}
+
+/* ── MUI Alert — bordes redondeados ── */
+.MuiAlert-root {
+  border-radius: 12px !important;
+}
+
+/* ── MUI Tooltip — limpio ── */
+.MuiTooltip-tooltip {
+  font-size: 11.5px !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(6px) !important;
+}
+
+/* ── MUI Dialog Paper — más redondeado ── */
+.MuiDialog-paper {
+  border-radius: 16px !important;
+}
+
+/* ── Drawer sidebar — scrollbar fino ── */
+.MuiDrawer-paper {
+  scrollbar-width: thin !important;
+  scrollbar-color: #e5e7eb transparent !important;
+}
+
+/* ── Sidebar: submenú — indentación visual con línea lateral ── */
+.MuiDrawer-paper .MuiCollapse-root .MuiList-root {
+  position: relative;
+}
+.MuiDrawer-paper .MuiCollapse-root .MuiList-root::before {
+  content: '';
+  position: absolute;
+  left: 28px;
+  top: 4px;
+  bottom: 4px;
+  width: 1.5px;
+  background: linear-gradient(180deg, rgba(245,124,0,0.35) 0%, rgba(245,124,0,0.08) 100%);
+  border-radius: 999px;
+}
+
+/* ── Sidebar: ítem activo — indicador lateral limpio ── */
+.MuiDrawer-paper .MuiListItemButton-root.active {
+  position: relative !important;
+}
+
+/* ── MUI Collapse — transición suave ── */
+.MuiCollapse-root {
+  transition: height 0.25s ease-in-out !important;
+}
+
+/* ── Divider más sutil ── */
+.MuiDivider-root {
+  border-color: rgba(0,0,0,0.07) !important;
+}
+
+/* ── ListSubheader — texto más fino ── */
+.MuiListSubheader-root {
+  font-size: 0.7rem !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: #9ca3af !important;
+  line-height: 2.5 !important;
+}
+
+/* ── Tabla: paginación ── */
+.MuiTablePagination-root {
+  border-top: 1px solid #f0f2f7 !important;
+  font-size: 0.825rem !important;
+}
+
+/* ── Mejoras en el formulario de filtros (DateInput, Search) ── */
+.MuiInputBase-input {
+  font-size: 0.9rem !important;
+}
+
+/* ── MUI IconButton — hover circular suave ── */
+.MuiIconButton-root {
+  transition: background-color 0.18s ease, color 0.18s ease, transform 0.12s ease !important;
+}
+.MuiIconButton-root:not(.Mui-disabled):hover {
+  transform: scale(1.08) !important;
+}
+.MuiIconButton-root:not(.Mui-disabled):active {
+  transform: scale(0.95) !important;
+}
+
+/* ── AppBar backdrop blur ── */
+.MuiAppBar-root {
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+/* ── Avatar — sombra sutil ── */
+.MuiAvatar-root {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12) !important;
+}
+
+/* ── Badge ── */
+.MuiBadge-badge {
+  font-size: 10px !important;
+  min-width: 16px !important;
+  height: 16px !important;
+}
+
+/* ── Responsive: drawer móvil animación ── */
+@media (max-width: 599px) {
+  .MuiDrawer-paperAnchorLeft {
+    animation: vcm-slide-drawer 0.28s cubic-bezier(0.22, 0.8, 0.15, 1) both;
+  }
+}
+@keyframes vcm-slide-drawer {
+  from { transform: translateX(-100%); opacity: 0.6; }
+  to   { transform: translateX(0);     opacity: 1;   }
+}
+

@@ -128,6 +128,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
             .antMatchers("/api/alerts-reminders/**").authenticated()
 
+            // Dashboard & Proyecciones
+            .antMatchers(HttpMethod.GET,    "/api/dashboard/**").authenticated()
+            .antMatchers(HttpMethod.GET,    "/api/proyecciones/**").authenticated()
+            .antMatchers(HttpMethod.POST,   "/api/proyecciones/**").hasAnyRole("ADMIN","MANAGER")
+            .antMatchers(HttpMethod.DELETE, "/api/proyecciones/**").hasAnyRole("ADMIN","MANAGER")
+
+            // Marketing
+            .antMatchers("/api/marketing/**").hasAnyRole("ADMIN","USER","MANAGER")
+
+            // Analytics
+            .antMatchers("/api/analytics/**").hasAnyRole("ADMIN","USER","MANAGER","OPERADOR")
+
+            // Reportes & Analítica
+            .antMatchers(HttpMethod.GET, "/api/reportes/auditoria/**").hasRole("ADMIN")
+            .antMatchers(HttpMethod.GET, "/api/reportes/**").hasAnyRole("ADMIN","USER","MANAGER","OPERADOR")
+
             .anyRequest().authenticated()
             .and()
 

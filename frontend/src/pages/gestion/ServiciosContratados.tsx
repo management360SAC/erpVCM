@@ -397,7 +397,7 @@ export default function ServiciosContratados() {
               sx={{
                 "& th": {
                   fontWeight: 700,
-                  backgroundColor: "#f9fafb",
+                  backgroundColor: "#f7f9fc",
                   borderBottom: "1px solid #e5e7eb",
                 },
               }}
@@ -525,6 +525,7 @@ export default function ServiciosContratados() {
             setSize(parseInt(e.target.value, 10));
             setPage(0);
           }}
+          labelRowsPerPage="Filas:"
         />
       </TableContainer>
 

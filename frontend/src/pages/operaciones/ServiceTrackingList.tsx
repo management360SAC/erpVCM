@@ -52,7 +52,7 @@ export default function ServiceTrackingList() {
 
   return (
     <AppLayout >
-      <Paper elevation={0} sx={{ p:2.5, mb:2, borderRadius:3, border:"1px solid #eef2f7", background:"#eef6ff" }}>
+      <Paper elevation={0} sx={{ p:2.5, mb:2, borderRadius:3, border:"1px solid #fed7aa", background:"#fff7ed" }}>
         <Typography variant="h5" fontWeight={800}>Seguimiento de Servicios</Typography>
       </Paper>
 
@@ -85,9 +85,9 @@ export default function ServiceTrackingList() {
             <CircularProgress size={24} />
           </Box>
         )}
-        <Table size="small" aria-disabled={loading}>
+        <Table size="medium" aria-disabled={loading}>
           <TableHead>
-            <TableRow>
+            <TableRow sx={{ "& th": { fontWeight: 700 } }}>
               <TableCell>#</TableCell>
               <TableCell>Cliente</TableCell>
               <TableCell>Servicio</TableCell>

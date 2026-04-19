@@ -58,6 +58,11 @@ import SentimentSatisfiedAltOutlinedIcon from "@mui/icons-material/SentimentSati
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import ShowChartOutlinedIcon from "@mui/icons-material/ShowChartOutlined";
 import MonetizationOnOutlinedIcon from "@mui/icons-material/MonetizationOnOutlined";
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
+import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
+import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
+import ManageSearchOutlinedIcon from "@mui/icons-material/ManageSearchOutlined";
 
 // Marketing
 import MarkEmailUnreadOutlinedIcon from "@mui/icons-material/MarkEmailUnreadOutlined";
@@ -69,6 +74,7 @@ import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import PeopleIcon from "@mui/icons-material/People";
 import PowerSettingsNewIcon from "@mui/icons-material/PowerSettingsNew";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 // Menú de usuario (avatar superior derecha)
 import UserMenu from "../components/UserMenu";
@@ -110,6 +116,7 @@ const Drawer = styled(MuiDrawer, {
   "& .MuiDrawer-paper": {
     borderRight: "1px solid #eef2f7",
     backgroundColor: VCM_BG_SOFT,
+    boxShadow: "2px 0 20px rgba(0,0,0,0.06)",
     ...(open ? openedMixin(theme) : closedMixin(theme)),
   },
 }));
@@ -145,10 +152,12 @@ function Group({
             minHeight: 44,
             justifyContent: mini ? "center" : "flex-start",
             borderRadius: 2,
-            transition: "0.2s ease",
+            transition: "background-color 0.2s ease, color 0.2s ease",
             cursor: "pointer",
+            ...(isOpen && !mini && { bgcolor: "rgba(245,124,0,0.06)" }),
             "&:hover": {
               bgcolor: VCM_ORANGE_SOFT,
+              "& .MuiListItemIcon-root": { color: VCM_ORANGE },
             },
           }}
         >
@@ -157,6 +166,7 @@ function Group({
               minWidth: 36,
               mr: mini ? 0 : 1,
               color: "#6b7280",
+              transition: "color 0.2s ease",
             }}
           >
             {icon}
@@ -165,6 +175,17 @@ function Group({
             <ListItemText
               primary={title}
               primaryTypographyProps={{ fontWeight: 700 }}
+            />
+          )}
+          {!mini && (
+            <ExpandMoreIcon
+              sx={{
+                color: "#9ca3af",
+                fontSize: 18,
+                flexShrink: 0,
+                transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                transition: "transform 0.25s ease-in-out, color 0.2s ease",
+              }}
             />
           )}
         </ListItemButton>
@@ -184,21 +205,25 @@ function Group({
                   minHeight: 40,
                   justifyContent: mini ? "center" : "flex-start",
                   borderRadius: 2,
-                  transition: "0.2s ease",
+                  transition: "background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease",
                   cursor: "pointer",
                   color: "#374151",
                   "& .MuiListItemIcon-root": {
                     color: "#6b7280",
+                    transition: "color 0.2s ease",
                   },
                   "&:hover": {
                     bgcolor: VCM_ORANGE_SOFT,
+                    color: "#1f2937",
+                    "& .MuiListItemIcon-root": { color: VCM_ORANGE },
                   },
                   "&.active": {
-                    bgcolor: VCM_ORANGE,
-                    color: "#ffffff",
-                    "& .MuiListItemIcon-root": {
-                      color: "#ffffff",
-                    },
+                    bgcolor: "rgba(245,124,0,0.11)",
+                    color: VCM_ORANGE,
+                    fontWeight: 700,
+                    boxShadow: `inset 3px 0 0 ${VCM_ORANGE}`,
+                    "& .MuiListItemIcon-root": { color: VCM_ORANGE },
+                    "& .MuiListItemText-primary": { fontWeight: 700 },
                   },
                 }}
               >
@@ -338,6 +363,11 @@ export default function AppLayout({ children, title, showFilters }: Props) {
       icon: <AssessmentOutlinedIcon />,
       items: [
         {
+          text: "Dashboard Analítica",
+          icon: <DashboardOutlinedIcon />,
+          path: "/reportes/dashboard",
+        },
+        {
           text: "KPIs y Tableros",
           icon: <AssessmentOutlinedIcon />,
           path: "/reportes/kpis",
@@ -351,6 +381,26 @@ export default function AppLayout({ children, title, showFilters }: Props) {
           text: "Rentabilidad",
           icon: <MonetizationOnOutlinedIcon />,
           path: "/reportes/rentabilidad",
+        },
+        {
+          text: "Reporte Pagos",
+          icon: <PaymentsOutlinedIcon />,
+          path: "/reportes/pagos",
+        },
+        {
+          text: "Reporte Clientes",
+          icon: <GroupOutlinedIcon />,
+          path: "/reportes/clientes",
+        },
+        {
+          text: "Pipeline / Deals",
+          icon: <AccountTreeOutlinedIcon />,
+          path: "/reportes/pipeline",
+        },
+        {
+          text: "Auditoría",
+          icon: <ManageSearchOutlinedIcon />,
+          path: "/reportes/auditoria",
         },
       ],
     },
@@ -482,7 +532,9 @@ export default function AppLayout({ children, title, showFilters }: Props) {
           borderRadius: 2,
           mx: 1.5,
           mb: 1.5,
-          border: "1px solid rgba(148,163,184,0.3)",
+          border: "1px solid rgba(148,163,184,0.25)",
+          boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
+          transition: "box-shadow 0.2s ease",
         }}
       >
         <Avatar src="/images/user.png" alt={username} />
@@ -517,6 +569,9 @@ export default function AppLayout({ children, title, showFilters }: Props) {
           bgcolor: VCM_BG_SOFT,
           color: "inherit",
           borderBottom: "1px solid #f1c9a5",
+          boxShadow: "0 1px 12px rgba(0,0,0,0.06)",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)",
           pl: {
             sm: sideOpen ? `${drawerWidthOpen}px` : `${drawerWidthClosed}px`,
           },

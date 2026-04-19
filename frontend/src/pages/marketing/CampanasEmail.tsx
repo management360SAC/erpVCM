@@ -61,7 +61,7 @@ export default function CampanasEmail() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  async function load() {``
+  async function load() {
     try {
       setLoading(true);
       setErrorMsg("");
@@ -96,8 +96,8 @@ export default function CampanasEmail() {
           p: 2.5,
           mb: 2,
           borderRadius: 3,
-          border: "1px solid #eef2f7",
-          background: "#eef6ff",
+          border: "1px solid #fed7aa",
+          background: "#fff7ed",
         }}
       >
         <Stack
@@ -175,7 +175,7 @@ export default function CampanasEmail() {
         elevation={0}
         sx={{ border: "1px solid #eef2f7", borderRadius: 3 }}
       >
-        <Table size="small">
+        <Table size="medium">
           <TableHead>
             <TableRow sx={{ "& th": { fontWeight: 700 } }}>
               <TableCell width={56}>#</TableCell>
@@ -245,7 +245,7 @@ export default function CampanasEmail() {
 
         <TablePagination
           component="div"
-          rowsPerPageOptions={[5, 10, 20]}
+          rowsPerPageOptions={[10, 20, 50]}
           count={filtered.length}
           rowsPerPage={rowsPerPage}
           page={page}
@@ -254,6 +254,7 @@ export default function CampanasEmail() {
             setRowsPerPage(parseInt(e.target.value, 10));
             setPage(0);
           }}
+          labelRowsPerPage="Filas:"
         />
       </TableContainer>
     </AppLayout>

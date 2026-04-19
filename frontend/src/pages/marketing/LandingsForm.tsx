@@ -29,7 +29,7 @@ export default function LandingsForm() {
 
   return (
     <AppLayout title="Landing / Formularios">
-      <Paper elevation={0} sx={{ p: 2.5, mb: 2, borderRadius: 3, border: "1px solid #eef2f7", background: "#eef6ff" }}>
+      <Paper elevation={0} sx={{ p: 2.5, mb: 2, borderRadius: 3, border: "1px solid #fed7aa", background: "#fff7ed" }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Box>
             <Typography variant="h5" fontWeight={800}>Landing / Formularios</Typography>
@@ -55,7 +55,7 @@ export default function LandingsForm() {
       </Stack>
 
       <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #eef2f7", borderRadius: 3 }}>
-        <Table size="small">
+        <Table size="medium">
           <TableHead>
             <TableRow sx={{ "& th": { fontWeight: 700 } }}>
               <TableCell>#</TableCell>
@@ -87,9 +87,10 @@ export default function LandingsForm() {
             )}
           </TableBody>
         </Table>
-        <TablePagination component="div" rowsPerPageOptions={[5,10,20]} count={rows.length}
+        <TablePagination component="div" rowsPerPageOptions={[10,20,50]} count={rows.length}
           rowsPerPage={rowsPerPage} page={page}
-          onPageChange={(_,p)=>setPage(p)} onRowsPerPageChange={(e)=>{setRowsPerPage(parseInt(e.target.value,10)); setPage(0);}} />
+          onPageChange={(_,p)=>setPage(p)} onRowsPerPageChange={(e)=>{setRowsPerPage(parseInt(e.target.value,10)); setPage(0);}}
+          labelRowsPerPage="Filas:" />
       </TableContainer>
     </AppLayout>
   );

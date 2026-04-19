@@ -41,7 +41,7 @@ public class NpsPublicController {
   @PostMapping("/answer")
   public ResponseEntity<?> answer(@Valid @RequestBody NpsPublicDtos.AnswerRequest req) {
     try {
-      npsPublicService.registerAnswer(req);
+      npsPublicService.registerAnswer(req.getToken(), req.getScore(), req.getComment());
       return ResponseEntity.ok("OK");
     } catch (IllegalArgumentException | IllegalStateException ex) {
       return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));

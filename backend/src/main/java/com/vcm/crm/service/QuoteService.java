@@ -160,6 +160,33 @@ public class QuoteService {
     quoteRepo.save(q);
 
     logStatusChange(q.getId(), oldStatus, QuoteStatus.ENVIADA, null, "Cotización enviada por correo");
+
+    // Crear o actualizar Deal en el embudo de ventas → etapa PROPUESTA
+    if (q.getClientId() != null) {
+      Integer orgId = q.getOrgId();
+      Integer clientIdInt = q.getClientId().intValue();
+      java.util.Optional<Deal> existingDeal =
+          dealRepository.findFirstByOrgIdAndClient_IdAndStatus(orgId, clientIdInt, "OPEN");
+
+      if (existingDeal.isPresent()) {
+        Deal deal = existingDeal.get();
+        deal.setStage("PROPUESTA");
+        if (q.getTotal() != null) deal.setAmount(q.getTotal());
+        dealRepository.save(deal);
+      } else {
+        Client client = clientRepo.findById(clientIdInt).orElse(null);
+        String clientName = client != null ? client.getLegalName() : "Cliente";
+        Deal deal = new Deal();
+        deal.setOrgId(orgId);
+        deal.setClient(client);
+        deal.setTitle("Cotización " + q.getNumber() + " - " + clientName);
+        deal.setAmount(q.getTotal());
+        deal.setStage("PROPUESTA");
+        deal.setStatus("OPEN");
+        dealRepository.save(deal);
+      }
+    }
+
     return toDto(q);
   }
 
@@ -286,6 +313,16 @@ public class QuoteService {
       }
     }
 
+    // Mover Deal a CERRADO_GANADO
+    if (q.getClientId() != null) {
+      dealRepository.findFirstByOrgIdAndClient_IdAndStatus(q.getOrgId(), q.getClientId().intValue(), "OPEN")
+          .ifPresent(deal -> {
+            deal.setStage("CERRADO_GANADO");
+            deal.setStatus("WON");
+            dealRepository.save(deal);
+          });
+    }
+
     return toDto(q);
   }
 
@@ -300,6 +337,17 @@ public class QuoteService {
     q.setStatus(QuoteStatus.RECHAZADA);
     quoteRepo.save(q);
     logStatusChange(quoteId, oldStatus, QuoteStatus.RECHAZADA, userId, reason);
+
+    // Mover Deal a CERRADO_PERDIDO
+    if (q.getClientId() != null) {
+      dealRepository.findFirstByOrgIdAndClient_IdAndStatus(q.getOrgId(), q.getClientId().intValue(), "OPEN")
+          .ifPresent(deal -> {
+            deal.setStage("CERRADO_PERDIDO");
+            deal.setStatus("LOST");
+            dealRepository.save(deal);
+          });
+    }
+
     return toDto(q);
   }
 

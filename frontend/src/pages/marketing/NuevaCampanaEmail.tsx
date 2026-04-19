@@ -30,6 +30,7 @@ import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import SearchIcon from "@mui/icons-material/Search";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
 import PreviewIcon from "@mui/icons-material/Visibility";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
 import AppLayout from "../../layout/AppLayout";
 import { createEmailCampaign } from "../../apis/emailCampaigns";
@@ -138,6 +139,11 @@ export default function NuevaCampanaEmail() {
   const [body, setBody] = useState("");
   const [headerImage, setHeaderImage] = useState<File | null>(null);
 
+  // Correos manuales
+  const [manualEmailInput, setManualEmailInput] = useState("");
+  const [manualEmails, setManualEmails]         = useState<string[]>([]);
+  const [manualEmailError, setManualEmailError] = useState("");
+
   // Previsualización
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
@@ -189,19 +195,48 @@ export default function NuevaCampanaEmail() {
   );
 
   /* --------- Validaciones --------- */
+  const emailRegex = /^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
   const canNextFromStep0 = name.trim().length > 2;
+
+  const totalRecipientCount = selectedClients.filter((c) => !!c.email).length + manualEmails.length;
 
   const canSave =
     name.trim().length > 2 &&
     subject.trim().length > 0 &&
     body.trim().length > 0 &&
-    selectedClients.length > 0 &&
+    totalRecipientCount > 0 &&
     !saving;
 
   const canPreview =
     subject.trim().length > 0 &&
     body.trim().length > 0 &&
-    selectedClients.length > 0;
+    totalRecipientCount > 0;
+
+  /** Agrega un email manual con validaciones */
+  function addManualEmail() {
+    setManualEmailError("");
+    const raw = manualEmailInput.trim().toLowerCase();
+    if (!raw) return;
+
+    if (!emailRegex.test(raw)) {
+      setManualEmailError("Formato de correo inválido.");
+      return;
+    }
+    const clientEmailSet = new Set(
+      selectedClients.map((c) => (c.email || "").toLowerCase())
+    );
+    if (clientEmailSet.has(raw) || manualEmails.includes(raw)) {
+      setManualEmailError("Este correo ya está en la lista de destinatarios.");
+      return;
+    }
+    setManualEmails((prev) => [...prev, raw]);
+    setManualEmailInput("");
+  }
+
+  function removeManualEmail(email: string) {
+    setManualEmails((prev) => prev.filter((e) => e !== email));
+  }
 
   const handleNext = () => {
     if (activeStep === 0 && !canNextFromStep0) return;
@@ -224,16 +259,16 @@ export default function NuevaCampanaEmail() {
         .map((c) => c.id)
         .filter((id): id is number => typeof id === "number");
 
-      // Usamos la plantilla HTML
       const finalHtml = buildEmailHtml(body.trim());
 
       await createEmailCampaign({
-        orgId: 1, // ajusta si luego usas org dinámica
+        orgId: 1,
         name: name.trim(),
         scheduledAt: scheduledDate ? `${scheduledDate}T09:00:00` : null,
         subject: subject.trim(),
         bodyHtml: finalHtml,
         clientIds,
+        manualEmails,
         headerImage,
       });
 
@@ -443,8 +478,8 @@ export default function NuevaCampanaEmail() {
                     }}
                     helperText={
                       totalEmails === 0
-                        ? "Elige una o más empresas que tengan correo registrado."
-                        : `Se enviará a ${totalEmails} correo(s) de ${selectedClients.length} empresa(s) seleccionadas.`
+                        ? "Opcional si ingresas correos manuales. Elige empresas con correo registrado."
+                        : `Se enviará a ${totalEmails} correo(s) de ${selectedClients.length} empresa(s).`
                     }
                   />
                 )}
@@ -459,6 +494,72 @@ export default function NuevaCampanaEmail() {
                   ))
                 }
               />
+            </Box>
+
+            {/* ── Correos manuales ── */}
+            <Box>
+              <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 0.5 }}>
+                Agregar correos adicionales (manual)
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+                Ingresa correos de personas que no están en el sistema como clientes.
+                Se validará el formato y se evitarán duplicados.
+              </Typography>
+
+              <Stack direction="row" spacing={1} alignItems="flex-start">
+                <TextField
+                  size="small"
+                  label="Correo electrónico"
+                  value={manualEmailInput}
+                  onChange={(e) => {
+                    setManualEmailInput(e.target.value);
+                    setManualEmailError("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") { e.preventDefault(); addManualEmail(); }
+                  }}
+                  error={!!manualEmailError}
+                  helperText={manualEmailError || "Presiona Enter o el botón + para agregar"}
+                  placeholder="nombre@empresa.com"
+                  sx={{ flex: 1 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <MailOutlineIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <Button
+                  variant="outlined"
+                  onClick={addManualEmail}
+                  startIcon={<AddCircleOutlineIcon />}
+                  sx={{ mt: 0.25, height: 40 }}
+                >
+                  Agregar
+                </Button>
+              </Stack>
+
+              {manualEmails.length > 0 && (
+                <Box sx={{ mt: 1.5, display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+                  {manualEmails.map((email) => (
+                    <Chip
+                      key={email}
+                      label={email}
+                      size="small"
+                      color="info"
+                      variant="outlined"
+                      onDelete={() => removeManualEmail(email)}
+                    />
+                  ))}
+                </Box>
+              )}
+
+              {manualEmails.length > 0 && (
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: "block" }}>
+                  {manualEmails.length} correo(s) adicional(es) ingresado(s) manualmente.
+                </Typography>
+              )}
             </Box>
 
             <Box>
@@ -591,8 +692,13 @@ export default function NuevaCampanaEmail() {
             Destinatarios
           </Typography>
           <Typography variant="body2" sx={{ mb: 2 }}>
-            Se enviará a {totalEmails} correo(s) de{" "}
-            {selectedClients.length} empresa(s) seleccionadas.
+            {totalEmails > 0 && (
+              <>{totalEmails} correo(s) de {selectedClients.length} empresa(s).</>
+            )}
+            {manualEmails.length > 0 && (
+              <> + {manualEmails.length} correo(s) ingresado(s) manualmente.</>
+            )}
+            {" "}Total: <strong>{totalRecipientCount}</strong> destinatario(s).
           </Typography>
 
           <Divider sx={{ my: 2 }} />

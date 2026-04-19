@@ -439,8 +439,8 @@ export default function HistorialCotizaciones() {
           p: 2.5,
           mb: 2,
           borderRadius: 3,
-          border: "1px solid #eef2f7",
-          background: "#eef6ff",
+          border: "1px solid #fed7aa",
+          background: "#fff7ed",
         }}
       >
         <Stack
@@ -706,12 +706,13 @@ export default function HistorialCotizaciones() {
         {/* Paginación */}
         <TablePagination
           component="div"
-          rowsPerPageOptions={[5, 10, 20, 50]}
+          rowsPerPageOptions={[10, 20, 50]}
           count={totalElements}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
+          labelRowsPerPage="Filas:"
         />
       </TableContainer>
 

@@ -35,6 +35,11 @@ import Leads from "../pages/pipeline/Leads";
 import Rentabilidad from "../pages/reportes/Rentabilidad";
 import KPIsTableros from "../pages/reportes/KPIsTableros";
 import Proyecciones from "../pages/reportes/Proyecciones";
+import ReportesDashboardPage from "../pages/reportes/ReportesDashboardPage";
+import ReportePagosPage     from "../pages/reportes/ReportePagosPage";
+import ReporteClientesPage  from "../pages/reportes/ReporteClientesPage";
+import ReportePipelinePage  from "../pages/reportes/ReportePipelinePage";
+import ReporteAuditoriaPage from "../pages/reportes/ReporteAuditoriaPage";
 
 import CampanasEmail from "../pages/marketing/CampanasEmail";
 import IntegracionAds from "../pages/marketing/IntegracionAds";
@@ -134,7 +139,14 @@ export const router = createBrowserRouter([
       { path: "/pipeline/alertas", element: <AlertasRecordatoriosPage />, errorElement: <NotFound /> },
       { path: "/pipeline/leads", element: <Leads />, errorElement: <NotFound /> },
 
-      // REPORTES & ANALÍTICA
+      // REPORTES & ANALÍTICA — nuevas rutas
+      { path: "/reportes/dashboard",  element: <ReportesDashboardPage />, errorElement: <NotFound /> },
+      { path: "/reportes/pagos",      element: <ReportePagosPage />,      errorElement: <NotFound /> },
+      { path: "/reportes/clientes",   element: <ReporteClientesPage />,   errorElement: <NotFound /> },
+      { path: "/reportes/pipeline",   element: <ReportePipelinePage />,   errorElement: <NotFound /> },
+      { path: "/reportes/auditoria",  element: <ReporteAuditoriaPage />,  errorElement: <NotFound /> },
+
+      // REPORTES & ANALÍTICA — existentes
       { path: "/reportes/kpis", element: <KPIsTableros />, errorElement: <NotFound /> },
       { path: "/reportes/kpis/:filter", element: <KPIsTableros />, errorElement: <NotFound /> },
       { path: "/reportes/kpis/:filter/:subfilter", element: <KPIsTableros />, errorElement: <NotFound /> },

@@ -9,17 +9,25 @@ import com.vcm.crm.entity.EmailCampaignStatus;
 import com.vcm.crm.repository.ClientRepository;
 import com.vcm.crm.repository.EmailCampaignRecipientRepository;
 import com.vcm.crm.repository.EmailCampaignRepository;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
 public class EmailCampaignService {
+
+    private static final Pattern EMAIL_REGEX =
+            Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
     private final EmailCampaignRepository campaignRepo;
     private final EmailCampaignRecipientRepository recipientRepo;
@@ -32,15 +40,18 @@ public class EmailCampaignService {
             ClientRepository clientRepo,
             MailService mailService
     ) {
-        this.campaignRepo = campaignRepo;
+        this.campaignRepo  = campaignRepo;
         this.recipientRepo = recipientRepo;
-        this.clientRepo = clientRepo;
-        this.mailService = mailService;
+        this.clientRepo    = clientRepo;
+        this.mailService   = mailService;
     }
 
-    /* ==========================
-           CREAR DESDE FORM
-       ========================== */
+    // =========================================================
+    //  CREAR CAMPAÑA DESDE FORMULARIO
+    //  Acepta:
+    //   - clientIdsJson  : "[1,2,3]" — clientes registrados
+    //   - manualEmailsJson: '["a@b.com","c@d.com"]' — correos manuales (puede ser null)
+    // =========================================================
     @Transactional
     public EmailCampaign createCampaignFromForm(
             Integer orgId,
@@ -49,37 +60,71 @@ public class EmailCampaignService {
             String bodyHtml,
             String scheduledAt,
             String clientIdsJson,
+            String manualEmailsJson,
             MultipartFile headerImage
     ) throws Exception {
 
-        // 1) Parsear clientIds desde JSON
         ObjectMapper mapper = new ObjectMapper();
-        Integer[] idsArray = mapper.readValue(clientIdsJson, Integer[].class);
-        List<Integer> clientIds = Arrays.asList(idsArray);
 
-        // 2) Filtrar clientes con email válido
-        List<Client> clients = clientRepo.findAllById(clientIds).stream()
-                .filter(c -> c.getEmail() != null && !c.getEmail().trim().isEmpty())
-                .collect(Collectors.toList());
-
-        if (clients.isEmpty()) {
-            throw new IllegalArgumentException("No hay clientes con correo para esta campaña.");
+        // ---- 1. Clientes registrados ----
+        List<Client> clients = new ArrayList<>();
+        if (clientIdsJson != null && !clientIdsJson.trim().isEmpty()) {
+            Integer[] idsArray = mapper.readValue(clientIdsJson, Integer[].class);
+            clients = clientRepo.findAllById(Arrays.asList(idsArray)).stream()
+                    .filter(c -> c.getEmail() != null && !c.getEmail().trim().isEmpty())
+                    .collect(Collectors.toList());
         }
 
-        // 3) Insertar imagen (si hay)
+        // ---- 2. Emails manuales (validar y deduplicar) ----
+        Set<String> clientEmails = clients.stream()
+                .map(c -> c.getEmail().trim().toLowerCase())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        List<String> manualOnlyEmails = new ArrayList<>(); // solo los que no están en clientes
+        List<String> invalidEmails    = new ArrayList<>();
+
+        if (manualEmailsJson != null && !manualEmailsJson.trim().isEmpty()) {
+            String[] rawEmails = mapper.readValue(manualEmailsJson, String[].class);
+            for (String raw : rawEmails) {
+                String email = raw.trim().toLowerCase();
+                if (email.isEmpty()) continue;
+                if (!EMAIL_REGEX.matcher(email).matches()) {
+                    invalidEmails.add(raw);
+                    continue;
+                }
+                if (!clientEmails.contains(email)) {
+                    manualOnlyEmails.add(email);
+                    clientEmails.add(email); // evitar duplicados entre manuales
+                }
+                // si ya está en clientes, se ignora (no duplicar)
+            }
+        }
+
+        if (!invalidEmails.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Los siguientes correos tienen formato inválido: " + String.join(", ", invalidEmails));
+        }
+
+        if (clients.isEmpty() && manualOnlyEmails.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "No hay destinatarios válidos para esta campaña. Selecciona clientes o ingresa correos manualmente.");
+        }
+
+        // ---- 3. Imagen ----
         String finalHtml = appendImageAtBottom(bodyHtml, headerImage);
 
-        // 4) Crear campaña
+        // ---- 4. Crear campaña ----
+        int totalRecipients = clients.size() + manualOnlyEmails.size();
+
         EmailCampaign campaign = new EmailCampaign();
         campaign.setOrgId(orgId);
         campaign.setName(name);
         campaign.setSubject(subject);
         campaign.setBodyHtml(finalHtml);
         campaign.setStatus(EmailCampaignStatus.BORRADOR);
-        campaign.setTotalRecipients(clients.size());
+        campaign.setTotalRecipients(totalRecipients);
         campaign.setCreatedAt(LocalDateTime.now());
 
-        // Guardar imagen si viene
         if (headerImage != null && !headerImage.isEmpty()) {
             campaign.setHeaderImageBytes(headerImage.getBytes());
             campaign.setHeaderImageContentType(headerImage.getContentType());
@@ -87,71 +132,58 @@ public class EmailCampaignService {
 
         campaign = campaignRepo.save(campaign);
 
-        // 5) Recipients
+        // ---- 5. Recipients de clientes ----
         for (Client c : clients) {
             EmailCampaignRecipient r = new EmailCampaignRecipient();
             r.setCampaign(campaign);
             r.setClientId(c.getId());
-            r.setEmail(c.getEmail());
+            r.setEmail(c.getEmail().trim());
             r.setStatus("PENDING");
             recipientRepo.save(r);
-
             campaign.getRecipients().add(r);
         }
 
-        // 6) Enviar ahora
-        sendNow(campaign);
+        // ---- 6. Recipients manuales (clientId = null) ----
+        for (String email : manualOnlyEmails) {
+            EmailCampaignRecipient r = new EmailCampaignRecipient();
+            r.setCampaign(campaign);
+            r.setClientId(null);  // email manual, no vinculado a cliente
+            r.setEmail(email);
+            r.setStatus("PENDING");
+            recipientRepo.save(r);
+            campaign.getRecipients().add(r);
+        }
+
+        // ---- 7. Enviar en segundo plano ----
+        final EmailCampaign savedCampaign = campaign;
+        sendNowAsync(savedCampaign);
 
         return campaign;
     }
 
-    /* ==========================
-       MÉTODO CORREGIDO
-       ========================== */
-
-    /**
-     * Inserta la imagen al final del cuerpo HTML.
-     */
     private String appendImageAtBottom(String bodyHtml, MultipartFile headerImage) {
         if (bodyHtml == null) bodyHtml = "";
-
+        if (headerImage == null || headerImage.isEmpty()) return bodyHtml;
         String placeholder = "<div style='margin-top:20px;text-align:center;'>{{HEADER_IMG}}</div>";
-
-        // si no hay imagen → devolver igual
-        if (headerImage == null || headerImage.isEmpty()) {
-            return bodyHtml;
-        }
-
-        // agregar al final del HTML
         return bodyHtml + placeholder;
     }
 
-    /** 
-     * Método original que estaba mal ubicado
-     */
-    private String appendImageInsideContainer(String bodyHtml) {
-        if (bodyHtml == null) bodyHtml = "";
-        String placeholder = "<div style='margin-top:20px;text-align:center;'>{{HEADER_IMG}}</div>";
-        String marker = "<!--VCM-FOOTER-->";
-
-        if (bodyHtml.contains(marker)) {
-            return bodyHtml.replace(marker, placeholder + marker);
-        }
-        return bodyHtml + placeholder;
+    // =========================================================
+    //  ENVIAR AHORA (async - no bloquea el request)
+    // =========================================================
+    @Async
+    @Transactional
+    public void sendNowAsync(EmailCampaign campaign) {
+        sendNow(campaign);
     }
 
-    /* ==========================
-            ENVIAR AHORA
-       ========================== */
     @Transactional
     public void sendNow(EmailCampaign campaign) {
-
         List<EmailCampaignRecipient> recipients = campaign.getRecipients();
         int enviados = 0;
 
         for (EmailCampaignRecipient r : recipients) {
             try {
-
                 if (campaign.getHeaderImageBytes() != null) {
                     mailService.sendHtmlWithInlineImage(
                             r.getEmail(),
@@ -167,11 +199,9 @@ public class EmailCampaignService {
                             campaign.getBodyHtml()
                     );
                 }
-
                 r.setStatus("SENT");
                 r.setSentAt(LocalDateTime.now());
                 enviados++;
-
             } catch (Exception e) {
                 r.setStatus("ERROR");
             }
@@ -183,18 +213,18 @@ public class EmailCampaignService {
         campaignRepo.save(campaign);
     }
 
-    /* ==========================
-           DTO
-       ========================== */
+    // =========================================================
+    //  DTO
+    // =========================================================
     public EmailCampaignResponse toDto(EmailCampaign c) {
         EmailCampaignResponse r = new EmailCampaignResponse();
-        r.id = c.getId();
-        r.orgId = c.getOrgId();
-        r.name = c.getName();
-        r.status = c.getStatus();
-        r.sent = c.getSentCount();
-        r.opens = c.getOpensCount();
-        r.clicks = c.getClicksCount();
+        r.id          = c.getId();
+        r.orgId       = c.getOrgId();
+        r.name        = c.getName();
+        r.status      = c.getStatus();
+        r.sent        = c.getSentCount();
+        r.opens       = c.getOpensCount();
+        r.clicks      = c.getClicksCount();
         r.scheduledAt = c.getScheduledAt();
         return r;
     }
