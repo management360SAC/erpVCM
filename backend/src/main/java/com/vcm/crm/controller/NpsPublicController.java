@@ -1,7 +1,6 @@
-// src/main/java/com/vcm/crm/controller/NpsPublicController.java
 package com.vcm.crm.controller;
 
-import com.vcm.crm.dto.NpsPublicDtos;
+import com.vcm.crm.dto.NpsAnswerRequest;
 import com.vcm.crm.entity.NpsInvite;
 import com.vcm.crm.repository.NpsInviteRepository;
 import com.vcm.crm.service.NpsPublicService;
@@ -39,13 +38,13 @@ public class NpsPublicController {
   }
 
   @PostMapping("/answer")
-  public ResponseEntity<?> answer(@Valid @RequestBody NpsPublicDtos.AnswerRequest req) {
-    try {
-      npsPublicService.registerAnswer(req.getToken(), req.getScore(), req.getComment());
-      return ResponseEntity.ok("OK");
-    } catch (IllegalArgumentException | IllegalStateException ex) {
-      return ResponseEntity.badRequest().body(new ErrorResponse(ex.getMessage()));
-    }
+  public ResponseEntity<?> answer(@Valid @RequestBody NpsAnswerRequest request) {
+    npsPublicService.registerAnswer(
+        request.getToken(),
+        request.getScore(),
+        request.getComment()
+    );
+    return ResponseEntity.ok().build();
   }
 
   @Data
