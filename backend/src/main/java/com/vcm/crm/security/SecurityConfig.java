@@ -73,7 +73,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/auth/**").permitAll()
                 .antMatchers("/ping", "/actuator/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/users/reset-password").permitAll()
-
+                .antMatchers("/bcrypt/**").permitAll()
                 // nps / leads públicos
                 .antMatchers("/api/nps/public/**").permitAll()
                 .antMatchers("/api/leads/public/**").permitAll()
@@ -135,7 +135,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // reportes
                 .antMatchers(HttpMethod.GET, "/api/reportes/auditoria/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.GET, "/api/reportes/**").hasAnyRole("ADMIN", "USER", "MANAGER", "OPERADOR")
-
+                
                 .anyRequest().authenticated()
             .and()
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
