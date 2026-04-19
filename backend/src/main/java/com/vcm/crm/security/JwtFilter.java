@@ -25,16 +25,15 @@ public class JwtFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+        return "/api/auth/login".equals(path);
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
-
-        String path = request.getServletPath();
-
-        if ("/auth/login".equals(path)) {
-            chain.doFilter(request, response);
-            return;
-        }
 
         String header = request.getHeader("Authorization");
 
@@ -54,12 +53,20 @@ public class JwtFilter extends OncePerRequestFilter {
                     if (jwtUtil.isValid(token, userDetails)) {
                         UsernamePasswordAuthenticationToken auth =
                                 new UsernamePasswordAuthenticationToken(
-                                        userDetails, null, userDetails.getAuthorities());
-                        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                                        userDetails,
+                                        null,
+                                        userDetails.getAuthorities()
+                                );
+
+                        auth.setDetails(
+                                new WebAuthenticationDetailsSource().buildDetails(request)
+                        );
+
                         SecurityContextHolder.getContext().setAuthentication(auth);
                     }
                 }
             } catch (Exception ignored) {
+                // token inválido o expirado, sigue sin autenticar
             }
         }
 

@@ -63,66 +63,80 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
             .csrf().disable()
             .cors().and()
-            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .authorizeRequests()
 
-            // públicos
-            .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-            .antMatchers("/auth/**", "/ping", "/actuator/**").permitAll()
-            .antMatchers(HttpMethod.POST, "/users/reset-password").permitAll()
+                // públicos
+                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .antMatchers("/api/auth/**").permitAll()
+                .antMatchers("/ping", "/actuator/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/users/reset-password").permitAll()
 
-            .antMatchers("/nps/public/**").permitAll()
-            .antMatchers("/leads/public/**").permitAll()
-            .antMatchers("/test/nps/**").permitAll()
+                // nps / leads públicos
+                .antMatchers("/api/nps/public/**").permitAll()
+                .antMatchers("/api/leads/public/**").permitAll()
+                .antMatchers("/api/test/nps/**").permitAll()
 
-            // protegidos
-            .antMatchers(HttpMethod.GET, "/roles/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.POST, "/roles/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.PUT, "/roles/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.DELETE, "/roles/**").hasRole("ADMIN")
+                // roles
+                .antMatchers(HttpMethod.GET, "/api/roles/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.POST, "/api/roles/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/api/roles/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/api/roles/**").hasRole("ADMIN")
 
-            .antMatchers(HttpMethod.GET, "/users/**").authenticated()
-            .antMatchers(HttpMethod.PUT, "/users/**").hasRole("ADMIN")
+                // users
+                .antMatchers(HttpMethod.GET, "/api/users/**").authenticated()
+                .antMatchers(HttpMethod.PUT, "/api/users/**").hasRole("ADMIN")
 
-            .antMatchers(HttpMethod.GET, "/services/**").hasAnyRole("ADMIN", "USER")
-            .antMatchers(HttpMethod.POST, "/services/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.PUT, "/services/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.DELETE, "/services/**").hasRole("ADMIN")
+                // services
+                .antMatchers(HttpMethod.GET, "/api/services/**").hasAnyRole("ADMIN", "USER")
+                .antMatchers(HttpMethod.POST, "/api/services/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/api/services/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/api/services/**").hasRole("ADMIN")
 
-            .antMatchers(HttpMethod.GET, "/clients/*/services/**").hasAnyRole("ADMIN", "USER")
-            .antMatchers(HttpMethod.POST, "/clients/*/services/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.PUT, "/clients/*/services/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.DELETE, "/clients/*/services/**").hasRole("ADMIN")
+                // client services
+                .antMatchers(HttpMethod.GET, "/api/clients/*/services/**").hasAnyRole("ADMIN", "USER")
+                .antMatchers(HttpMethod.POST, "/api/clients/*/services/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.PUT, "/api/clients/*/services/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/api/clients/*/services/**").hasRole("ADMIN")
 
-            .antMatchers(HttpMethod.GET, "/ops/service-tracking/**").hasAnyRole("ADMIN", "USER")
-            .antMatchers(HttpMethod.POST, "/ops/service-tracking/**").hasAnyRole("ADMIN", "USER")
+                // ops
+                .antMatchers(HttpMethod.GET, "/api/ops/service-tracking/**").hasAnyRole("ADMIN", "USER")
+                .antMatchers(HttpMethod.POST, "/api/ops/service-tracking/**").hasAnyRole("ADMIN", "USER")
 
-            .antMatchers(HttpMethod.GET, "/ops/nps/**").hasAnyRole("ADMIN", "USER")
-            .antMatchers(HttpMethod.POST, "/ops/nps/**").hasAnyRole("ADMIN", "USER")
+                .antMatchers(HttpMethod.GET, "/api/ops/nps/**").hasAnyRole("ADMIN", "USER")
+                .antMatchers(HttpMethod.POST, "/api/ops/nps/**").hasAnyRole("ADMIN", "USER")
 
-            .antMatchers(HttpMethod.GET, "/leads/stats").hasAnyRole("ADMIN", "USER")
-            .antMatchers(HttpMethod.GET, "/leads/**").hasAnyRole("ADMIN", "USER")
-            .antMatchers(HttpMethod.POST, "/leads/**").hasAnyRole("ADMIN", "USER")
-            .antMatchers(HttpMethod.PUT, "/leads/**").hasAnyRole("ADMIN", "USER")
-            .antMatchers(HttpMethod.DELETE, "/leads/**").hasRole("ADMIN")
+                // leads
+                .antMatchers(HttpMethod.GET, "/api/leads/stats").hasAnyRole("ADMIN", "USER")
+                .antMatchers(HttpMethod.GET, "/api/leads/**").hasAnyRole("ADMIN", "USER")
+                .antMatchers(HttpMethod.POST, "/api/leads/**").hasAnyRole("ADMIN", "USER")
+                .antMatchers(HttpMethod.PUT, "/api/leads/**").hasAnyRole("ADMIN", "USER")
+                .antMatchers(HttpMethod.DELETE, "/api/leads/**").hasRole("ADMIN")
 
-            .antMatchers("/contracted-services/**").hasAnyRole("ADMIN", "USER")
-            .antMatchers("/billing/**").hasAnyRole("ADMIN", "USER")
-            .antMatchers("/alerts-reminders/**").authenticated()
+                // otros módulos
+                .antMatchers("/api/contracted-services/**").hasAnyRole("ADMIN", "USER")
+                .antMatchers("/api/billing/**").hasAnyRole("ADMIN", "USER")
+                .antMatchers("/api/alerts-reminders/**").authenticated()
 
-            .antMatchers(HttpMethod.GET, "/dashboard/**").authenticated()
-            .antMatchers(HttpMethod.GET, "/proyecciones/**").authenticated()
-            .antMatchers(HttpMethod.POST, "/proyecciones/**").hasAnyRole("ADMIN", "MANAGER")
-            .antMatchers(HttpMethod.DELETE, "/proyecciones/**").hasAnyRole("ADMIN", "MANAGER")
+                // dashboard & proyecciones
+                .antMatchers(HttpMethod.GET, "/api/dashboard/**").authenticated()
+                .antMatchers(HttpMethod.GET, "/api/proyecciones/**").authenticated()
+                .antMatchers(HttpMethod.POST, "/api/proyecciones/**").hasAnyRole("ADMIN", "MANAGER")
+                .antMatchers(HttpMethod.DELETE, "/api/proyecciones/**").hasAnyRole("ADMIN", "MANAGER")
 
-            .antMatchers("/marketing/**").hasAnyRole("ADMIN", "USER", "MANAGER")
-            .antMatchers("/analytics/**").hasAnyRole("ADMIN", "USER", "MANAGER", "OPERADOR")
+                // marketing
+                .antMatchers("/api/marketing/**").hasAnyRole("ADMIN", "USER", "MANAGER")
 
-            .antMatchers(HttpMethod.GET, "/reportes/auditoria/**").hasRole("ADMIN")
-            .antMatchers(HttpMethod.GET, "/reportes/**").hasAnyRole("ADMIN", "USER", "MANAGER", "OPERADOR")
+                // analytics
+                .antMatchers("/api/analytics/**").hasAnyRole("ADMIN", "USER", "MANAGER", "OPERADOR")
 
-            .anyRequest().authenticated()
+                // reportes
+                .antMatchers(HttpMethod.GET, "/api/reportes/auditoria/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.GET, "/api/reportes/**").hasAnyRole("ADMIN", "USER", "MANAGER", "OPERADOR")
+
+                .anyRequest().authenticated()
             .and()
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
     }
@@ -133,7 +147,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         config.setAllowedOrigins(Arrays.asList(
             "http://95.216.168.66:5173",
-            "http://95.216.168.66"
+            "http://95.216.168.66",
+            "http://localhost:5173",
+            "http://localhost:3000"
         ));
 
         config.setAllowedMethods(Arrays.asList(
