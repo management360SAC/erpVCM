@@ -3,39 +3,44 @@ package com.vcm.crm.controller;
 import com.vcm.crm.entity.Usuario;
 import com.vcm.crm.repository.UsuarioRepository;
 import com.vcm.crm.security.JwtUtil;
-
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @RestController
-@RequestMapping("/api/auth")   // 👈👈 CAMBIO IMPORTANTE
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final AuthenticationManager authManager;
     private final JwtUtil jwtUtil;
     private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    // ================================
-    //              LOGIN
-    // ================================
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req) {
         try {
             System.out.println(">>> ENTRE AL LOGIN");
             System.out.println(">>> username = " + req.getUsername());
 
+            Usuario testUser = usuarioRepository.findByUsername(req.getUsername()).orElse(null);
+
+            System.out.println(">>> USER FROM DB = " + (testUser != null ? testUser.getUsername() : "null"));
+            System.out.println(">>> HASH FROM DB = " + (testUser != null ? testUser.getPassword() : "null"));
+            System.out.println(">>> IS ACTIVE = " + (testUser != null ? testUser.getIsActive() : "null"));
+            System.out.println(">>> ROLE = " + (testUser != null ? testUser.getRol() : "null"));
+            System.out.println(">>> MATCHES = " + (testUser != null && passwordEncoder.matches(req.getPassword(), testUser.getPassword())));
+
             Authentication auth = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                    req.getUsername(), req.getPassword()
+                    req.getUsername(),
+                    req.getPassword()
                 )
             );
 
@@ -60,18 +65,12 @@ public class AuthController {
         }
     }
 
-    // ================================
-    //        DTOs del Request
-    // ================================
     @Data
     public static class LoginRequest {
         private String username;
         private String password;
     }
 
-    // ================================
-    //        DTOs del Response
-    // ================================
     @Data
     public static class LoginResponse {
         private String accessToken;
