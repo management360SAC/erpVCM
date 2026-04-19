@@ -279,7 +279,7 @@ CREATE TABLE IF NOT EXISTS deal (
   id             BIGINT NOT NULL AUTO_INCREMENT,
   org_id         INT NOT NULL DEFAULT 1,
   client_id      INT NULL,
-  lead_id        BIGINT NULL,
+  lead_id        INT NULL,
   title          VARCHAR(200) NOT NULL,
   amount         DECIMAL(12,2) NULL,
   stage          VARCHAR(30) NOT NULL DEFAULT 'PROSPECTO',
@@ -288,10 +288,9 @@ CREATE TABLE IF NOT EXISTS deal (
   created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  KEY fk_deal_client (client_id),
-  KEY fk_deal_lead (lead_id),
-  CONSTRAINT fk_deal_client FOREIGN KEY (client_id) REFERENCES clients (id) ON DELETE SET NULL,
-  CONSTRAINT fk_deal_lead FOREIGN KEY (lead_id) REFERENCES marketing_lead (id) ON DELETE SET NULL
+  KEY idx_deal_client (client_id),
+  KEY idx_deal_lead (lead_id),
+  CONSTRAINT fk_deal_lead FOREIGN KEY (lead_id) REFERENCES leads (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =====================================================================
