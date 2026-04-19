@@ -28,27 +28,36 @@ public class AuthController {
     //              LOGIN
     // ================================
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest req) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest req) {
+        try {
+            System.out.println(">>> ENTRE AL LOGIN");
+            System.out.println(">>> username = " + req.getUsername());
 
-        Authentication auth = authManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                req.getUsername(), req.getPassword()
-            )
-        );
+            Authentication auth = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                    req.getUsername(), req.getPassword()
+                )
+            );
 
-        UserDetails ud = (UserDetails) auth.getPrincipal();
+            System.out.println(">>> AUTH OK");
 
-        // Buscar el usuario para devolver el ID
-        Usuario u = usuarioRepository.findByUsername(ud.getUsername())
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            UserDetails ud = (UserDetails) auth.getPrincipal();
 
-        LoginResponse resp = new LoginResponse();
-        resp.setAccessToken(jwtUtil.generateAccessToken(ud.getUsername()));
-        resp.setRefreshToken(jwtUtil.generateRefreshToken(ud.getUsername()));
-        resp.setUsername(ud.getUsername());
-        resp.setUserId(u.getId());
+            Usuario u = usuarioRepository.findByUsername(ud.getUsername())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        return ResponseEntity.ok(resp);
+            LoginResponse resp = new LoginResponse();
+            resp.setAccessToken(jwtUtil.generateAccessToken(ud.getUsername()));
+            resp.setRefreshToken(jwtUtil.generateRefreshToken(ud.getUsername()));
+            resp.setUsername(ud.getUsername());
+            resp.setUserId(u.getId());
+
+            return ResponseEntity.ok(resp);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(e.getClass().getName() + ": " + e.getMessage());
+        }
     }
 
     // ================================
