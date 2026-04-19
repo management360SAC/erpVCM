@@ -13,7 +13,7 @@ ERP web para empresas orientado a **gestión comercial y operativa**, con módul
 
 ## 🧱 Tecnologías
 
-### Frontend
+### Frontend∏
 - React + Vite
 - TypeScript
 - Router (rutas tipo `/pipeline/leads`, `/cotizaciones/nueva`, etc.)
