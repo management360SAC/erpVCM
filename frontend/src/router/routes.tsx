@@ -45,6 +45,7 @@ import CampanasEmail from "../pages/marketing/CampanasEmail";
 import IntegracionAds from "../pages/marketing/IntegracionAds";
 import LandingsForm from "../pages/marketing/LandingsForm";
 import NuevaCampanaEmail from "../pages/marketing/NuevaCampanaEmail";
+import AsistenteIA from "../pages/ai/AsistenteIA";
 
 function NotFound() {
   return (
@@ -194,6 +195,9 @@ export const router = createBrowserRouter([
       { path: "/marketing/landing/:filter/:subfilter", element: <LandingsForm />, errorElement: <NotFound /> },
 
       { path: "/marketing/email/nueva", element: <NuevaCampanaEmail />, errorElement: <NotFound /> },
+
+      // ASISTENTE IA
+      { path: "/asistente-ia", element: <AsistenteIA />, errorElement: <NotFound /> },
     ],
   },
 

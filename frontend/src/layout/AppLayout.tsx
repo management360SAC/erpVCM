@@ -70,6 +70,9 @@ import CampaignOutlinedIcon from "@mui/icons-material/CampaignOutlined";
 import WebAssetOutlinedIcon from "@mui/icons-material/WebAssetOutlined";
 import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
 
+// Asistente IA
+import SmartToyOutlinedIcon from "@mui/icons-material/SmartToyOutlined";
+
 // Integraciones/Usuarios
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import PeopleIcon from "@mui/icons-material/People";
@@ -428,6 +431,18 @@ export default function AppLayout({ children, title, showFilters }: Props) {
           text: "Fuentes de Lead",
           icon: <LocalOfferOutlinedIcon />,
           path: "/marketing/fuentes",
+        },
+      ],
+    },
+    {
+      key: "asistente-ia",
+      title: "Asistente IA",
+      icon: <SmartToyOutlinedIcon />,
+      items: [
+        {
+          text: "Asistente IA",
+          icon: <SmartToyOutlinedIcon />,
+          path: "/asistente-ia",
         },
       ],
     },

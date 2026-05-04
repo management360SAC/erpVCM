@@ -43,8 +43,6 @@ services:
     container_name: vcm-frontend
     ports:
       - "5173:5173"
-    environment:
-      - VITE_API_BASE=http://localhost:8080/api
     volumes:
       - ./frontend:/app
       - /app/node_modules

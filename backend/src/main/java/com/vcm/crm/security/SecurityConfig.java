@@ -71,13 +71,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // públicos
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .antMatchers("/api/auth/**").permitAll()
-                .antMatchers("/ping", "/actuator/**").permitAll()
+                .antMatchers("/ping").permitAll()
+                .antMatchers("/actuator/health").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/users/reset-password").permitAll()
-                .antMatchers("/bcrypt/**").permitAll()
-                // nps / leads públicos
+                // nps / leads públicos (formularios externos)
                 .antMatchers("/api/nps/public/**").permitAll()
                 .antMatchers("/api/leads/public/**").permitAll()
-                .antMatchers("/api/test/nps/**").permitAll()
+                // bcrypt y test: solo ADMIN
+                .antMatchers("/bcrypt/**").hasRole("ADMIN")
+                .antMatchers("/api/test/**").hasRole("ADMIN")
 
                 // roles
                 .antMatchers(HttpMethod.GET, "/api/roles/**").hasRole("ADMIN")
