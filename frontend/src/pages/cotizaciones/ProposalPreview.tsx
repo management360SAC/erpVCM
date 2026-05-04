@@ -82,7 +82,7 @@ export default function ProposalVCMPreview() {
             {/* LOGO SUPERIOR */}
             <Box sx={{ textAlign: "center", mb: 3 }}>
               <img
-                src="https://storage.googleapis.com/corpsolution/vcm-logo.png"
+                src="/images/grupo-vcm.png"
                 alt="VCM"
                 style={{
                   width: 220,
@@ -182,7 +182,7 @@ export default function ProposalVCMPreview() {
             {/* LOGO INFERIOR */}
             <Box sx={{ textAlign: "right" }}>
               <img
-                src="https://storage.googleapis.com/corpsolution/vcm-footer.png"
+                src="/images/logo_sinFondo.png"
                 alt="VCM Footer"
                 style={{ width: 120, height: "auto", objectFit: "contain" }}
               />
