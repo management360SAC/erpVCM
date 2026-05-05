@@ -290,7 +290,7 @@ CREATE TABLE IF NOT EXISTS deal (
   PRIMARY KEY (id),
   KEY idx_deal_client (client_id),
   KEY idx_deal_lead (lead_id),
-  CONSTRAINT fk_deal_lead FOREIGN KEY (lead_id) REFERENCES leads (id) ON DELETE SET NULL
+  CONSTRAINT fk_deal_lead FOREIGN KEY (lead_id) REFERENCES marketing_lead (id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =====================================================================

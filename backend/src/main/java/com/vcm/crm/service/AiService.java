@@ -40,7 +40,7 @@ public class AiService {
     }
 
     public String chat(String message, String contextType) throws Exception {
-        if (geminiApiKey == null || geminiApiKey.isBlank()) {
+        if (geminiApiKey == null || geminiApiKey.trim().isEmpty()) {
             return "El asistente IA no está configurado. Contacta al administrador para activar la clave de Gemini.";
         }
 
