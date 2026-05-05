@@ -41,8 +41,6 @@ public class ClientServiceImpl implements ClientService {
         c.setOrgId(req.getOrgId());
         c.setLegalName(req.getLegalName().trim());
         c.setTaxId(req.getTaxId());
-        c.setSectorId(req.getSectorId());
-        c.setSizeId(req.getSizeId());
         c.setEmail(req.getEmail());
         c.setPhone(req.getPhone());
         c = repo.save(c);
@@ -56,8 +54,6 @@ public class ClientServiceImpl implements ClientService {
 
         if (req.getLegalName() != null) c.setLegalName(req.getLegalName().trim());
         if (req.getTaxId() != null) c.setTaxId(req.getTaxId());
-        if (req.getSectorId() != null) c.setSectorId(req.getSectorId());
-        if (req.getSizeId() != null) c.setSizeId(req.getSizeId());
         if (req.getEmail() != null) c.setEmail(req.getEmail());
         if (req.getPhone() != null) c.setPhone(req.getPhone());
 
@@ -79,8 +75,6 @@ public class ClientServiceImpl implements ClientService {
         r.setOrgId(c.getOrgId());
         r.setLegalName(c.getLegalName());
         r.setTaxId(c.getTaxId());
-        r.setSectorId(c.getSectorId());
-        r.setSizeId(c.getSizeId());
         r.setEmail(c.getEmail());
         r.setPhone(c.getPhone());
         return r;
