@@ -13,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
 public class AiService {
 
     private static final String GEMINI_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=";
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
 
     private static final String SYSTEM_PROMPT =
             "Eres el Asistente IA de VCM Group, una firma consultora peruana especializada en servicios " +
