@@ -6,8 +6,6 @@ export type ClientResponse = {
   orgId?: number;
   legalName?: string;
   taxId?: string;
-  sectorId?: number | null;
-  sizeId?: number | null;
   email?: string;
   phone?: string;
 };
@@ -16,8 +14,6 @@ export type CreateClientRequest = {
   orgId: number;
   legalName: string;
   taxId?: string;
-  sectorId?: number | null;
-  sizeId?: number | null;
   email?: string;
   phone?: string;
 };

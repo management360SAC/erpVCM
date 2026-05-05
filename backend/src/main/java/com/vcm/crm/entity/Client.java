@@ -24,12 +24,6 @@ public class Client {
     @Column(name = "tax_id", length = 30)
     private String taxId;
 
-    @Column(name = "sector_id")
-    private Integer sectorId;
-
-    @Column(name = "size_id")
-    private Integer sizeId;
-
     @Column(name = "email", length = 150)
     private String email;
 

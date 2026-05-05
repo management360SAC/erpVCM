@@ -318,7 +318,6 @@ export default function ClientsList() {
               <TableCell>RUC / Tax ID</TableCell>
               <TableCell>Correo</TableCell>
               <TableCell>Teléfono</TableCell>
-              <TableCell>Sector</TableCell>
               <TableCell>Servicios</TableCell>
               <TableCell align="right" width={72}>
                 Acciones
@@ -361,9 +360,6 @@ export default function ClientsList() {
                       </Typography>
                     </TableCell>
                     <TableCell>{r.phone || "-"}</TableCell>
-                    <TableCell>
-                      <Chip size="small" label={r.sectorId ?? "-"} />
-                    </TableCell>
 
                     {/* Botón que abre modal con servicios */}
                     <TableCell>

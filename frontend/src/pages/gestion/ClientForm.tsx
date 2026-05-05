@@ -39,8 +39,6 @@ export default function ClientForm() {
     orgId: 1,
     legalName: "",
     taxId: "",
-    sectorId: null,
-    sizeId: null,
     email: "",
     phone: "",
   });
@@ -71,8 +69,6 @@ export default function ClientForm() {
           orgId: data.orgId ?? 1,
           legalName: data.legalName ?? "",
           taxId: data.taxId ?? "",
-          sectorId: data.sectorId ?? null,
-          sizeId: data.sizeId ?? null,
           email: data.email ?? "",
           phone: data.phone ?? "",
         });
@@ -105,8 +101,6 @@ export default function ClientForm() {
             await updateClient(Number(id), {
               legalName: form.legalName,
               taxId: form.taxId || undefined,
-              sectorId: form.sectorId ?? undefined,
-              sizeId: form.sizeId ?? undefined,
               email: form.email || undefined,
               phone: form.phone || undefined,
             });
@@ -197,22 +191,7 @@ export default function ClientForm() {
             />
           </Grid>
 
-          <Grid item xs={12} md={3}>
-            <TextField
-              label="Organización (orgId)"
-              type="number"
-              fullWidth
-              value={form.orgId}
-              onChange={(e) =>
-                setForm((s) => ({
-                  ...s,
-                  orgId: Number(e.target.value || 1),
-                }))
-              }
-            />
-          </Grid>
-
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={6}>
             <TextField
               label="Correo"
               fullWidth
@@ -221,32 +200,12 @@ export default function ClientForm() {
             />
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} md={6}>
             <TextField
               label="Teléfono"
               fullWidth
               value={form.phone ?? ""}
               onChange={onChange("phone")}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={2}>
-            <TextField
-              label="Sector (ID)"
-              type="number"
-              fullWidth
-              value={form.sectorId ?? ""}
-              onChange={onChange("sectorId")}
-            />
-          </Grid>
-
-          <Grid item xs={12} md={2}>
-            <TextField
-              label="Tamaño (ID)"
-              type="number"
-              fullWidth
-              value={form.sizeId ?? ""}
-              onChange={onChange("sizeId")}
             />
           </Grid>
         </Grid>

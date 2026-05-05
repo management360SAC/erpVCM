@@ -16,12 +16,10 @@ public class ClientDtos {
         private String legalName;
         
         private String taxId;
-        private Integer sectorId;
-        private Integer sizeId;
-        
+
         @Email
         private String email;
-        
+
         private String phone;
     }
 
@@ -29,12 +27,10 @@ public class ClientDtos {
     public static class UpdateClientRequest {
         private String legalName;
         private String taxId;
-        private Integer sectorId;
-        private Integer sizeId;
-        
+
         @Email
         private String email;
-        
+
         private String phone;
     }
 
@@ -44,8 +40,6 @@ public class ClientDtos {
         private Integer orgId;
         private String legalName;
         private String taxId;
-        private Integer sectorId;
-        private Integer sizeId;
         private String email;
         private String phone;
     }

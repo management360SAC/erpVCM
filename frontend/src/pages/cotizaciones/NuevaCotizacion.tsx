@@ -33,13 +33,11 @@ import { sendQuoteEmail } from "../../apis/quotes";
 // Ampliamos el formulario del cliente para incluir validUntil aquí en el front.
 type ClientForm = Partial<CreateClientRequest> & {
   orgId: number;
-  sectorId: number | null;
-  sizeId: number | null;
   legalName: string;
   taxId?: string;
   email?: string;
   phone?: string;
-  validUntil?: string; // 👈 nueva fecha de vigencia en el front
+  validUntil?: string;
 };
 
 type SectorType = "PRIVADO" | "PUBLICO" | null;
@@ -213,11 +211,9 @@ export default function NuevaCotizacion() {
     orgId: 1,
     legalName: "",
     taxId: "",
-    sectorId: null,
-    sizeId: null,
     email: "",
     phone: "",
-    validUntil: "", // 👈 nueva propiedad en el formulario del front
+    validUntil: "",
   });
 
   const [client, setClient] = useState<ClientResponse | null>(null);
@@ -332,8 +328,6 @@ export default function NuevaCotizacion() {
         taxId: "",
         email: "",
         phone: "",
-        sectorId: null,
-        sizeId: null,
         validUntil: "",
       });
     }
@@ -360,8 +354,6 @@ export default function NuevaCotizacion() {
           orgId: form.orgId!,
           legalName: form.legalName!,
           taxId: form.taxId || "",
-          sectorId: form.sectorId,
-          sizeId: form.sizeId,
           email: form.email || "",
           phone: form.phone || "",
         } as CreateClientRequest);
@@ -716,7 +708,7 @@ export default function NuevaCotizacion() {
             {/* Contenido */}
             <Box sx={{ position: "relative", zIndex: 2, p: 6, pt: 5 }}>
               <Box sx={{ textAlign: "center", mb: 4 }}>
-                <img src="/marca-secundaria.png" alt="VCM" style={{ height: 80 }} />
+                <img src="/images/logo_sinFondo.png" alt="VCM" style={{ height: 90, objectFit: "contain" }} />
               </Box>
 
               {/* Carta */}
