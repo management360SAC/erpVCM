@@ -61,6 +61,18 @@ public class BillingService {
         Invoice inv = invoiceRepo.findById(invoiceId)
                 .orElseThrow(() -> new IllegalArgumentException("Factura no existe: " + invoiceId));
 
+        if ("PAGADA_TOTAL".equals(inv.getStatus())) {
+            throw new IllegalArgumentException("La factura ya está pagada en su totalidad.");
+        }
+
+        BigDecimal pagadoPrevio = paymentRepo.sumValidByInvoiceId(invoiceId);
+        if (pagadoPrevio == null) pagadoPrevio = BigDecimal.ZERO;
+        BigDecimal saldo = inv.getTotal().subtract(pagadoPrevio);
+        if (amount.compareTo(saldo) > 0) {
+            throw new IllegalArgumentException(
+                String.format("El monto S/ %.2f supera el saldo pendiente S/ %.2f", amount, saldo));
+        }
+
         String number = nextPaymentNumber();
         Path dir = Paths.get(paymentsRoot, String.valueOf(Year.now().getValue()));
         Files.createDirectories(dir);

@@ -26,6 +26,7 @@ import com.vcm.crm.repository.QuoteItemRepository;
 import com.vcm.crm.repository.QuoteRepository;
 import com.vcm.crm.repository.QuoteStatusLogRepository;
 import com.vcm.crm.repository.ServiceCatalogRepository;
+import com.vcm.crm.dto.ContractedServiceDTO;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -56,6 +57,7 @@ public class QuoteService {
   // 👉 nuevos repositorios para embudo / notificaciones
   private final DealRepository dealRepository;
   private final CrmNotificationRepository notifRepository;
+  private final InvoiceService invoiceService;
 
   @Value("${app.quotes.storage:/data/quotes}")
   private String storageRoot;
@@ -71,7 +73,8 @@ public class QuoteService {
       ClientRepository clientRepo,
       ServiceCatalogRepository serviceCatalogRepo,
       DealRepository dealRepository,
-      CrmNotificationRepository notifRepository) {
+      CrmNotificationRepository notifRepository,
+      InvoiceService invoiceService) {
 
     this.quoteRepo = quoteRepo;
     this.itemRepo = itemRepo;
@@ -84,6 +87,7 @@ public class QuoteService {
     this.serviceCatalogRepo = serviceCatalogRepo;
     this.dealRepository = dealRepository;
     this.notifRepository = notifRepository;
+    this.invoiceService = invoiceService;
   }
 
   /* =================== CREAR BORRADOR =================== */
@@ -282,7 +286,14 @@ public class QuoteService {
     }).collect(Collectors.toList());
     req.setItems(items);
 
-    contractedServiceService.createContractedService(req, orgId, userId);
+    ContractedServiceDTO csDto = contractedServiceService.createContractedService(req, orgId, userId);
+
+    // Auto-generar factura al aprobar cotización
+    try {
+      invoiceService.ensureOpenInvoiceForService(csDto.getId());
+    } catch (Exception ex) {
+      System.err.println("[QuoteService] Advertencia: no se pudo crear factura automática para CS " + csDto.getId() + ": " + ex.getMessage());
+    }
 
     // 2) Crear registros client_service como INACTIVOS
     if (q.getClientId() != null) {
