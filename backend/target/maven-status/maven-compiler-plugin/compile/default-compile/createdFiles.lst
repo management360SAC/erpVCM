@@ -55,8 +55,11 @@ com/vcm/crm/controller/AuthController$LoginRequest.class
 com/vcm/crm/dto/LeadDtos$LeadDto$LeadDtoBuilder.class
 com/vcm/crm/dto/MarketingDtos$IntakeLeadRequest.class
 com/vcm/crm/repo/QuoteSequenceRepository.class
+com/vcm/crm/dto/AiDtos$AiChatResponse.class
 com/vcm/crm/dto/LeadDtos$LeadUpdateRequest.class
+com/vcm/crm/dto/AiDtos$AiChatRequest.class
 com/vcm/crm/model/LeadPriority.class
+com/vcm/crm/controller/AiController.class
 com/vcm/crm/repository/ClientServiceRepository.class
 com/vcm/crm/controller/ReminderController.class
 com/vcm/crm/controller/ServiceTrackingController.class
@@ -103,9 +106,12 @@ com/vcm/crm/service/UserServiceImpl.class
 com/vcm/crm/service/EmailCampaignService.class
 com/vcm/crm/repository/ReminderRepository.class
 com/vcm/crm/repository/AlertRepository.class
+com/vcm/crm/service/AiService.class
+com/vcm/crm/controller/ManualProjectionController.class
 com/vcm/crm/entity/ContractedService$BillingStatus.class
 com/vcm/crm/service/UserDetailsServiceImpl.class
 com/vcm/crm/dto/ReportDtos$DealRow.class
+com/vcm/crm/repository/ManualProjectionRepository.class
 com/vcm/crm/controller/NpsPublicController$ErrorResponse.class
 com/vcm/crm/service/ClientService.class
 com/vcm/crm/dto/LeadStats.class
@@ -125,6 +131,7 @@ com/vcm/crm/dto/ClientDtos$ClientResponse.class
 com/vcm/crm/dto/NpsResponseDto$NpsResponseDtoBuilder.class
 com/vcm/crm/controller/QuoteController.class
 com/vcm/crm/controller/ReportesController.class
+com/vcm/crm/dto/AiDtos.class
 com/vcm/crm/dto/ServiceDtos$ServiceResponse.class
 com/vcm/crm/service/BillingService.class
 com/vcm/crm/dto/ReportDtos$SeriesPoint.class
@@ -176,6 +183,7 @@ com/vcm/crm/dto/NpsSummaryDto$NpsSummaryDtoBuilder.class
 com/vcm/crm/dto/CreateQuoteRequest$Item.class
 com/vcm/crm/service/RoleServiceImpl.class
 com/vcm/crm/dto/EmailCampaignResponse.class
+com/vcm/crm/service/AiContextService.class
 com/vcm/crm/entity/ReportAuditLog.class
 com/vcm/crm/dto/NpsResponseDto.class
 com/vcm/crm/repository/ContractedServiceItemRepository.class
@@ -195,7 +203,9 @@ com/vcm/crm/dto/ServiceDtos.class
 com/vcm/crm/dto/ClientDtos.class
 com/vcm/crm/dto/NpsDtos$NpsSummaryDto$NpsSummaryDtoBuilder.class
 com/vcm/crm/dto/NpsPublicDtos$AnswerRequest.class
+com/vcm/crm/controller/DashboardController.class
 com/vcm/crm/dto/ClientServiceDTO.class
+com/vcm/crm/entity/ManualProjection.class
 com/vcm/crm/repository/ReportAuditLogRepository.class
 com/vcm/crm/dto/ServiceTrackingDtos$ExpiryRow.class
 com/vcm/crm/dto/PagedResponse.class
