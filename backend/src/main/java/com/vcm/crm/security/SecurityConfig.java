@@ -134,6 +134,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // analytics
                 .antMatchers("/api/analytics/**").hasAnyRole("ADMIN", "USER", "MANAGER", "OPERADOR")
 
+                // asistente IA
+                .antMatchers("/api/ai/**").authenticated()
+
                 // reportes
                 .antMatchers(HttpMethod.GET, "/api/reportes/auditoria/**").hasRole("ADMIN")
                 .antMatchers(HttpMethod.GET, "/api/reportes/**").hasAnyRole("ADMIN", "USER", "MANAGER", "OPERADOR")
