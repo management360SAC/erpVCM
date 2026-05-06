@@ -61,6 +61,14 @@ public class QuoteController {
     }
   }
 
+  // ====== DETALLE POR ID ======
+  @GetMapping("/{id}")
+  public ResponseEntity<?> getById(@PathVariable Long id) {
+    return repo.findById(id)
+        .map(q -> ResponseEntity.ok(toDto(q)))
+        .orElse(ResponseEntity.notFound().build());
+  }
+
   // ====== APROBAR (crea Servicio Contratado) ======
   static class StatusReason { public String reason; }
 
