@@ -23,7 +23,7 @@ public class Quote {
   @Column(nullable=false, length=20, unique=true)
   private String number;
   
-  @Column(name="client_id", nullable=false)
+  @Column(name="client_id")
   private Long clientId;
   
   @Column(nullable=false, length=10)
