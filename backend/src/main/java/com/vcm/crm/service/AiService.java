@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -78,14 +79,36 @@ public class AiService {
 
         HttpEntity<String> entity = new HttpEntity<>(mapper.writeValueAsString(root), headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(
-                GEMINI_URL + geminiApiKey,
-                HttpMethod.POST,
-                entity,
-                String.class
-        );
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    GEMINI_URL + geminiApiKey,
+                    HttpMethod.POST,
+                    entity,
+                    String.class
+            );
+            return extractGeminiText(response.getBody());
 
-        return extractGeminiText(response.getBody());
+        } catch (HttpClientErrorException e) {
+            int status = e.getStatusCode().value();
+            if (status == 429) {
+                return "El asistente alcanzó el límite de consultas del plan gratuito de Gemini por hoy. " +
+                       "La cuota se renueva automáticamente mañana. Si necesitas más capacidad, " +
+                       "activa la facturación en Google AI Studio.";
+            }
+            if (status == 400) {
+                return "La consulta no pudo procesarse (solicitud inválida). Intenta reformular tu pregunta.";
+            }
+            if (status == 403) {
+                return "La clave de API de Gemini no tiene permisos suficientes. Contacta al administrador.";
+            }
+            return "Error al conectar con Gemini (" + status + "). Intenta de nuevo en unos minutos.";
+
+        } catch (Exception e) {
+            if (e.getMessage() != null && e.getMessage().contains("Connection refused")) {
+                return "No se pudo conectar con el servicio de IA. Verifica la conexión a internet del servidor.";
+            }
+            throw e;
+        }
     }
 
     private String extractGeminiText(String responseBody) throws Exception {

@@ -20,14 +20,15 @@ public class AiController {
     }
 
     @PostMapping("/chat")
-    public ResponseEntity<?> chat(@Valid @RequestBody AiDtos.AiChatRequest req) {
+    public ResponseEntity<AiDtos.AiChatResponse> chat(@Valid @RequestBody AiDtos.AiChatRequest req) {
         try {
             String reply = aiService.chat(req.getMessage(), req.getContextType());
             return ResponseEntity.ok(new AiDtos.AiChatResponse(reply));
         } catch (Exception e) {
-            Map<String, String> err = new HashMap<>();
-            err.put("error", "Error al procesar la consulta: " + e.getMessage());
-            return ResponseEntity.status(500).body(err);
+            // Siempre devolvemos 200 con reply para que el frontend lo muestre como mensaje en el chat
+            return ResponseEntity.ok(new AiDtos.AiChatResponse(
+                "Lo siento, ocurrió un error al procesar tu consulta. Intenta de nuevo en unos momentos."
+            ));
         }
     }
 }
