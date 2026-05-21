@@ -49,17 +49,5 @@ services:
     depends_on:
       - backend
 
-  pma:
-    image: phpmyadmin:latest
-    container_name: vcm-pma
-    environment:
-      PMA_HOST: db
-      PMA_USER: root
-      PMA_PASSWORD: YourStrong!Passw0rd
-    ports:
-      - "8081:80"
-    depends_on:
-      - db
-
 volumes:
   mysqldata:
