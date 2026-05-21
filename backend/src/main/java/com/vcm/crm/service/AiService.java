@@ -109,7 +109,7 @@ public class AiService {
                 "Topic: " + userPrompt + ". Context: asesoría fiscal, laboral y administrativa en Perú " +
                 "(SUNAT, remuneraciones, contratos laborales, obligaciones tributarias, normativa peruana). " +
                 "Design requirements: " +
-                "- Leave a clean empty white strip at the very top of the image (about 8% of total height) with absolutely no text, icons or graphics, reserved for a company logo overlay. This strip must be completely blank white. " +
+                "- Leave a clean empty white strip at the very top of the image (about 12% of total height) with absolutely no text, icons or graphics, reserved for a company logo overlay. This strip must be completely blank white. " +
                 "- Elegant structured modules or columns clearly separated by thin lines. " +
                 "- Section titles in bold orange, body text in dark grey, all in Spanish. " +
                 "- Subtle geometric icons (scales, gavels, files, documents, charts) styled with the same orange/grey palette. " +

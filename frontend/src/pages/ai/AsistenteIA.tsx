@@ -97,22 +97,30 @@ function addLogoToImage(imageDataUrl: string): Promise<string> {
       // 1. Dibujar la infografía completa
       ctx.drawImage(img, 0, 0);
 
-      // 2. Fondo blanco sobre la franja superior (8% de alto)
-      const stripH = img.height * 0.08;
+      // 2. Franja superior blanca (12% del alto)
+      const stripH = img.height * 0.12;
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, img.width, stripH);
 
-      // 3. Superponer el logo centrado en la franja
+      // 3. Línea divisoria sutil al borde inferior de la franja
+      ctx.strokeStyle = "#f57c00";
+      ctx.lineWidth = img.width * 0.003;
+      ctx.beginPath();
+      ctx.moveTo(0, stripH);
+      ctx.lineTo(img.width, stripH);
+      ctx.stroke();
+
+      // 4. Logo centrado ocupando el 85% del alto de la franja
       const logo = new Image();
       logo.onload = () => {
-        const logoH = stripH * 0.70;                         // 70% del alto de la franja
+        const logoH = stripH * 0.85;
         const logoW = (logo.width / logo.height) * logoH;
         const x = (img.width - logoW) / 2;
         const y = (stripH - logoH) / 2;
         ctx.drawImage(logo, x, y, logoW, logoH);
         resolve(canvas.toDataURL("image/png"));
       };
-      logo.onerror = () => resolve(canvas.toDataURL("image/png")); // sin logo si no carga
+      logo.onerror = () => resolve(canvas.toDataURL("image/png"));
       logo.src = "/images/logo_sinFondo.png";
     };
     img.onerror = () => resolve(imageDataUrl);
