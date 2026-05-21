@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" width="900" height="520" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#9e9e9e"/>
+    </marker>
+    <marker id="arrO" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#f57c00"/>
+    </marker>
+    <marker id="arrB" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#1565c0"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="520" fill="#fafafa" rx="12"/>
+  <text x="450" y="36" text-anchor="middle" font-size="20" font-weight="700" fill="#f57c00">Módulo de Inteligencia Artificial — VCM CRM</text>
+  <line x1="60" y1="46" x2="840" y2="46" stroke="#e0e0e0" stroke-width="1.5"/>
+
+  <!-- ── USUARIO ── -->
+  <rect x="30" y="60" width="140" height="380" rx="10" fill="#e3f2fd" stroke="#1565c0" stroke-width="2"/>
+  <text x="100" y="82" text-anchor="middle" font-size="11" font-weight="700" fill="#1565c0">USUARIO</text>
+  <text x="100" y="100" text-anchor="middle" font-size="22">👤</text>
+
+  <rect x="42" y="114" width="116" height="38" rx="6" fill="#1565c0"/>
+  <text x="100" y="130" text-anchor="middle" font-size="10" font-weight="700" fill="white">Chat / Pregunta</text>
+  <text x="100" y="145" text-anchor="middle" font-size="9" fill="#e3f2fd">+ Contexto CRM</text>
+
+  <rect x="42" y="164" width="116" height="38" rx="6" fill="#1976d2"/>
+  <text x="100" y="180" text-anchor="middle" font-size="10" font-weight="700" fill="white">Ver infografía</text>
+  <text x="100" y="195" text-anchor="middle" font-size="9" fill="#e3f2fd">Generar imagen</text>
+
+  <rect x="42" y="214" width="116" height="38" rx="6" fill="#0d47a1"/>
+  <text x="100" y="230" text-anchor="middle" font-size="10" font-weight="700" fill="white">Enviar email</text>
+  <text x="100" y="245" text-anchor="middle" font-size="9" fill="#e3f2fd">Confirmar draft</text>
+
+  <text x="100" y="285" text-anchor="middle" font-size="9" fill="#5a5a5a">Contextos:</text>
+  <text x="100" y="299" text-anchor="middle" font-size="9" fill="#5a5a5a">general · clientes</text>
+  <text x="100" y="313" text-anchor="middle" font-size="9" fill="#5a5a5a">leads · cotizaciones</text>
+  <text x="100" y="327" text-anchor="middle" font-size="9" fill="#5a5a5a">pagos · servicios</text>
+  <text x="100" y="341" text-anchor="middle" font-size="9" fill="#5a5a5a">campañas · reportes</text>
+
+  <!-- ARROWS from User to Backend -->
+  <line x1="172" y1="133" x2="250" y2="133" stroke="#1565c0" stroke-width="2" marker-end="url(#arrB)"/>
+  <line x1="172" y1="183" x2="250" y2="220" stroke="#1565c0" stroke-width="2" marker-end="url(#arrB)"/>
+  <line x1="172" y1="233" x2="250" y2="320" stroke="#1565c0" stroke-width="2" marker-end="url(#arrB)"/>
+
+  <!-- ── BACKEND — AISERVICE ── -->
+  <rect x="250" y="60" width="240" height="400" rx="10" fill="#f5f5f5" stroke="#5a5a5a" stroke-width="2"/>
+  <text x="370" y="82" text-anchor="middle" font-size="11" font-weight="700" fill="#5a5a5a">BACKEND — AiService</text>
+  <text x="370" y="98" text-anchor="middle" font-size="9" fill="#9e9e9e">Spring Boot · Java</text>
+
+  <!-- Chat flow -->
+  <rect x="264" y="108" width="212" height="52" rx="7" fill="#fff8f0" stroke="#f57c00" stroke-width="1.5"/>
+  <text x="370" y="127" text-anchor="middle" font-size="10" font-weight="700" fill="#f57c00">POST /api/ai/chat</text>
+  <text x="370" y="143" text-anchor="middle" font-size="9" fill="#5a5a5a">message + contextType</text>
+  <text x="370" y="157" text-anchor="middle" font-size="9" fill="#5a5a5a">→ AiContextService.buildContext()</text>
+
+  <!-- Context service box -->
+  <rect x="264" y="172" width="212" height="60" rx="7" fill="#ffe0b2" stroke="#f57c00" stroke-width="1"/>
+  <text x="370" y="191" text-anchor="middle" font-size="10" font-weight="700" fill="#e65100">AiContextService</text>
+  <text x="370" y="207" text-anchor="middle" font-size="9" fill="#5a5a5a">Consulta DB en tiempo real</text>
+  <text x="370" y="221" text-anchor="middle" font-size="9" fill="#5a5a5a">Inyecta datos en el prompt</text>
+
+  <!-- System Prompt -->
+  <rect x="264" y="245" width="212" height="52" rx="7" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="1"/>
+  <text x="370" y="264" text-anchor="middle" font-size="10" font-weight="700" fill="#7b1fa2">System Prompt</text>
+  <text x="370" y="280" text-anchor="middle" font-size="9" fill="#5a5a5a">Identidad VCM · Reglas</text>
+  <text x="370" y="294" text-anchor="middle" font-size="9" fill="#5a5a5a">Detección EMAIL_DRAFT</text>
+
+  <!-- Image gen -->
+  <rect x="264" y="310" width="212" height="52" rx="7" fill="#fff8f0" stroke="#f57c00" stroke-width="1.5"/>
+  <text x="370" y="329" text-anchor="middle" font-size="10" font-weight="700" fill="#f57c00">POST /api/ai/generate-image</text>
+  <text x="370" y="345" text-anchor="middle" font-size="9" fill="#5a5a5a">Gemini Vision API</text>
+  <text x="370" y="359" text-anchor="middle" font-size="9" fill="#5a5a5a">Validación ortográfica 2x</text>
+
+  <!-- Email send -->
+  <rect x="264" y="376" width="212" height="52" rx="7" fill="#fff8f0" stroke="#f57c00" stroke-width="1.5"/>
+  <text x="370" y="395" text-anchor="middle" font-size="10" font-weight="700" fill="#f57c00">POST /api/ai/email/send</text>
+  <text x="370" y="411" text-anchor="middle" font-size="9" fill="#5a5a5a">Multipart: to·subject·html+PDF</text>
+  <text x="370" y="425" text-anchor="middle" font-size="9" fill="#5a5a5a">→ MailService (SMTP)</text>
+
+  <!-- Internal arrows -->
+  <line x1="370" y1="160" x2="370" y2="172" stroke="#f57c00" stroke-width="1.5" marker-end="url(#arrO)"/>
+  <line x1="370" y1="232" x2="370" y2="245" stroke="#7b1fa2" stroke-width="1.5"/>
+
+  <!-- ARROWS to Gemini -->
+  <line x1="492" y1="134" x2="560" y2="134" stroke="#f57c00" stroke-width="2" marker-end="url(#arrO)"/>
+  <line x1="492" y1="336" x2="560" y2="250" stroke="#f57c00" stroke-width="2" marker-end="url(#arrO)"/>
+  <line x1="492" y1="402" x2="560" y2="370" stroke="#9e9e9e" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ── GEMINI API ── -->
+  <rect x="560" y="60" width="200" height="200" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="2"/>
+  <text x="660" y="82" text-anchor="middle" font-size="11" font-weight="700" fill="#2e7d32">Google Gemini API</text>
+  <text x="660" y="96" text-anchor="middle" font-size="9" fill="#388e3c">generativelanguage.googleapis.com</text>
+
+  <rect x="575" y="108" width="170" height="42" rx="7" fill="#2e7d32"/>
+  <text x="660" y="126" text-anchor="middle" font-size="10" font-weight="700" fill="white">gemini-flash-latest</text>
+  <text x="660" y="142" text-anchor="middle" font-size="9" fill="#c8e6c9">Chat · Temp 0.7 · 4096 tok</text>
+
+  <rect x="575" y="162" width="170" height="42" rx="7" fill="#388e3c"/>
+  <text x="660" y="180" text-anchor="middle" font-size="10" font-weight="700" fill="white">gemini-2.5-flash-image</text>
+  <text x="660" y="196" text-anchor="middle" font-size="9" fill="#c8e6c9">Generación de imágenes</text>
+
+  <rect x="575" y="216" width="170" height="30" rx="7" fill="#1b5e20"/>
+  <text x="660" y="234" text-anchor="middle" font-size="9" font-weight="700" fill="white">Revisión ortográfica</text>
+
+  <!-- ── SMTP / EMAIL ── -->
+  <rect x="560" y="280" width="200" height="100" rx="10" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <text x="660" y="300" text-anchor="middle" font-size="11" font-weight="700" fill="#e65100">MailService</text>
+  <text x="660" y="316" text-anchor="middle" font-size="9" fill="#bf360c">smtp.office365.com:587</text>
+  <rect x="575" y="325" width="170" height="20" rx="5" fill="#e65100" opacity="0.8"/>
+  <text x="660" y="339" text-anchor="middle" font-size="9" font-weight="700" fill="white">sendHtml() · sendQuote()</text>
+  <rect x="575" y="350" width="170" height="20" rx="5" fill="#bf360c" opacity="0.7"/>
+  <text x="660" y="364" text-anchor="middle" font-size="9" font-weight="700" fill="white">@Async · Con PDF adjunto</text>
+
+  <!-- Return arrows -->
+  <line x1="560" y1="150" x2="492" y2="150" stroke="#9e9e9e" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="526" y="145" text-anchor="middle" font-size="8" fill="#9e9e9e">respuesta</text>
+
+  <!-- ── EMAIL DRAFT LOGIC ── -->
+  <rect x="560" y="400" width="200" height="90" rx="10" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="2"/>
+  <text x="660" y="420" text-anchor="middle" font-size="11" font-weight="700" fill="#7b1fa2">Lógica EMAIL_DRAFT</text>
+  <text x="660" y="437" text-anchor="middle" font-size="9" fill="#5a5a5a">Gemini devuelve JSON</text>
+  <text x="660" y="452" text-anchor="middle" font-size="9" fill="#5a5a5a">Frontend parsea bloque</text>
+  <text x="660" y="467" text-anchor="middle" font-size="9" fill="#5a5a5a">Genera PDF si quotePdf present</text>
+  <text x="660" y="479" text-anchor="middle" font-size="9" fill="#5a5a5a">POST /api/ai/email/send</text>
+
+  <line x1="492" y1="134" x2="492" y2="445" stroke="#7b1fa2" stroke-width="1" stroke-dasharray="4,3"/>
+  <line x1="492" y1="445" x2="558" y2="445" stroke="#7b1fa2" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Right side: output legend -->
+  <rect x="780" y="60" width="108" height="420" rx="10" fill="#fafafa" stroke="#e0e0e0" stroke-width="1.5"/>
+  <text x="834" y="82" text-anchor="middle" font-size="10" font-weight="700" fill="#5a5a5a">SALIDAS</text>
+  <text x="834" y="108" text-anchor="middle" font-size="18">💬</text>
+  <text x="834" y="126" text-anchor="middle" font-size="9" fill="#5a5a5a">Respuesta</text>
+  <text x="834" y="140" text-anchor="middle" font-size="9" fill="#5a5a5a">de texto</text>
+
+  <text x="834" y="175" text-anchor="middle" font-size="18">🖼️</text>
+  <text x="834" y="193" text-anchor="middle" font-size="9" fill="#5a5a5a">Infografía</text>
+  <text x="834" y="207" text-anchor="middle" font-size="9" fill="#5a5a5a">base64 PNG</text>
+
+  <text x="834" y="242" text-anchor="middle" font-size="18">📧</text>
+  <text x="834" y="260" text-anchor="middle" font-size="9" fill="#5a5a5a">Email HTML</text>
+  <text x="834" y="274" text-anchor="middle" font-size="9" fill="#5a5a5a">+ PDF adjunto</text>
+
+  <text x="834" y="310" text-anchor="middle" font-size="18">⚠️</text>
+  <text x="834" y="328" text-anchor="middle" font-size="9" fill="#5a5a5a">Errores</text>
+  <text x="834" y="342" text-anchor="middle" font-size="9" fill="#5a5a5a">amigables</text>
+  <text x="834" y="356" text-anchor="middle" font-size="9" fill="#5a5a5a">429·400·403</text>
+
+  <!-- Footer -->
+  <line x1="30" y1="475" x2="870" y2="475" stroke="#e0e0e0" stroke-width="1"/>
+  <text x="450" y="495" text-anchor="middle" font-size="9" fill="#bdbdbd">Módulo IA — VCM CRM · Motor: Google Gemini Flash · Sistema de prompts con contexto CRM en tiempo real · 2026</text>
+</svg>

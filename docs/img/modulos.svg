@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 580" width="920" height="580" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="920" height="580" fill="#fafafa" rx="12"/>
+
+  <!-- Title -->
+  <text x="460" y="38" text-anchor="middle" font-size="20" font-weight="700" fill="#f57c00">Mapa de Módulos — VCM CRM</text>
+  <line x1="60" y1="48" x2="860" y2="48" stroke="#e0e0e0" stroke-width="1.5"/>
+
+  <!-- ── COLUMN 1: COMERCIAL ── -->
+  <text x="130" y="76" text-anchor="middle" font-size="12" font-weight="700" fill="#f57c00">COMERCIAL</text>
+
+  <!-- Dashboard -->
+  <rect x="40" y="84" width="175" height="65" rx="8" fill="#fff8f0" stroke="#f57c00" stroke-width="2"/>
+  <text x="75" y="108" font-size="20">📊</text>
+  <text x="105" y="107" font-size="12" font-weight="700" fill="#333">Dashboard</text>
+  <text x="105" y="123" font-size="10" fill="#757575">KPIs en tiempo real</text>
+  <text x="105" y="138" font-size="10" fill="#757575">MRR · Pipeline · Leads</text>
+
+  <!-- Clientes -->
+  <rect x="40" y="160" width="175" height="65" rx="8" fill="#fff8f0" stroke="#f57c00" stroke-width="2"/>
+  <text x="75" y="184" font-size="20">👥</text>
+  <text x="105" y="183" font-size="12" font-weight="700" fill="#333">Clientes</text>
+  <text x="105" y="199" font-size="10" fill="#757575">Registro y portafolio</text>
+  <text x="105" y="214" font-size="10" fill="#757575">Servicios por cliente</text>
+
+  <!-- Cotizaciones -->
+  <rect x="40" y="236" width="175" height="65" rx="8" fill="#fff8f0" stroke="#f57c00" stroke-width="2"/>
+  <text x="75" y="260" font-size="20">📄</text>
+  <text x="105" y="259" font-size="12" font-weight="700" fill="#333">Cotizaciones</text>
+  <text x="105" y="275" font-size="10" fill="#757575">PDF · Email · Numeración</text>
+  <text x="105" y="290" font-size="10" fill="#757575">5 estados con log</text>
+
+  <!-- Pipeline -->
+  <rect x="40" y="312" width="175" height="65" rx="8" fill="#fff8f0" stroke="#f57c00" stroke-width="2"/>
+  <text x="75" y="336" font-size="20">🏆</text>
+  <text x="105" y="335" font-size="12" font-weight="700" fill="#333">Pipeline (Embudo)</text>
+  <text x="105" y="351" font-size="10" fill="#757575">Kanban drag &amp; drop</text>
+  <text x="105" y="366" font-size="10" fill="#757575">5 etapas de venta</text>
+
+  <!-- Proyecciones -->
+  <rect x="40" y="388" width="175" height="65" rx="8" fill="#fff8f0" stroke="#f57c00" stroke-width="2"/>
+  <text x="75" y="412" font-size="20">📈</text>
+  <text x="105" y="411" font-size="12" font-weight="700" fill="#333">Proyecciones</text>
+  <text x="105" y="427" font-size="10" fill="#757575">Metas vs. Real</text>
+  <text x="105" y="442" font-size="10" fill="#757575">Por mes y año</text>
+
+  <!-- ── COLUMN 2: OPERACIONES ── -->
+  <text x="360" y="76" text-anchor="middle" font-size="12" font-weight="700" fill="#5a5a5a">OPERACIONES</text>
+
+  <!-- Servicios Contratados -->
+  <rect x="270" y="84" width="175" height="65" rx="8" fill="#f5f5f5" stroke="#5a5a5a" stroke-width="2"/>
+  <text x="305" y="108" font-size="20">📋</text>
+  <text x="335" y="107" font-size="12" font-weight="700" fill="#333">Servicios Contratados</text>
+  <text x="335" y="122" font-size="10" fill="#757575">Contratos activos</text>
+  <text x="335" y="137" font-size="10" fill="#757575">PENDIENTE→COMPLETADO</text>
+
+  <!-- Seguimiento -->
+  <rect x="270" y="160" width="175" height="65" rx="8" fill="#f5f5f5" stroke="#5a5a5a" stroke-width="2"/>
+  <text x="305" y="184" font-size="20">🔍</text>
+  <text x="335" y="183" font-size="12" font-weight="700" fill="#333">Seguimiento</text>
+  <text x="335" y="199" font-size="10" fill="#757575">Trazabilidad servicios</text>
+  <text x="335" y="214" font-size="10" fill="#757575">Scheduler automático</text>
+
+  <!-- Cronogramas -->
+  <rect x="270" y="236" width="175" height="65" rx="8" fill="#f5f5f5" stroke="#5a5a5a" stroke-width="2"/>
+  <text x="305" y="260" font-size="20">📅</text>
+  <text x="335" y="259" font-size="12" font-weight="700" fill="#333">Cronogramas</text>
+  <text x="335" y="275" font-size="10" fill="#757575">Planificación temporal</text>
+  <text x="335" y="290" font-size="10" fill="#757575">Vista de servicios</text>
+
+  <!-- NPS -->
+  <rect x="270" y="312" width="175" height="65" rx="8" fill="#f5f5f5" stroke="#5a5a5a" stroke-width="2"/>
+  <text x="305" y="336" font-size="20">⭐</text>
+  <text x="335" y="335" font-size="12" font-weight="700" fill="#333">NPS</text>
+  <text x="335" y="351" font-size="10" fill="#757575">Satisfacción clientes</text>
+  <text x="335" y="366" font-size="10" fill="#757575">Encuesta pública</text>
+
+  <!-- Facturación y Pagos -->
+  <rect x="270" y="388" width="175" height="65" rx="8" fill="#f5f5f5" stroke="#5a5a5a" stroke-width="2"/>
+  <text x="305" y="412" font-size="20">💰</text>
+  <text x="335" y="411" font-size="12" font-weight="700" fill="#333">Facturación / Pagos</text>
+  <text x="335" y="427" font-size="10" fill="#757575">Facturas · Vouchers</text>
+  <text x="335" y="442" font-size="10" fill="#757575">Cobranza y saldos</text>
+
+  <!-- ── COLUMN 3: MARKETING / REPORTES ── -->
+  <text x="590" y="76" text-anchor="middle" font-size="12" font-weight="700" fill="#e65100">MARKETING / REPORTES</text>
+
+  <!-- Leads -->
+  <rect x="500" y="84" width="175" height="65" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <text x="535" y="108" font-size="20">🎯</text>
+  <text x="565" y="107" font-size="12" font-weight="700" fill="#333">Leads</text>
+  <text x="565" y="123" font-size="10" fill="#757575">Captación y calificación</text>
+  <text x="565" y="138" font-size="10" fill="#757575">Formularios públicos</text>
+
+  <!-- Campañas Email -->
+  <rect x="500" y="160" width="175" height="65" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <text x="535" y="184" font-size="20">📧</text>
+  <text x="565" y="183" font-size="12" font-weight="700" fill="#333">Campañas Email</text>
+  <text x="565" y="199" font-size="10" fill="#757575">Email masivo</text>
+  <text x="565" y="214" font-size="10" fill="#757575">Métricas de apertura</text>
+
+  <!-- Fuentes de Leads -->
+  <rect x="500" y="236" width="175" height="65" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <text x="535" y="260" font-size="20">📡</text>
+  <text x="565" y="259" font-size="12" font-weight="700" fill="#333">Fuentes de Leads</text>
+  <text x="565" y="275" font-size="10" fill="#757575">Dashboard por canal</text>
+  <text x="565" y="290" font-size="10" fill="#757575">Análisis de origen</text>
+
+  <!-- Reportes -->
+  <rect x="500" y="312" width="175" height="65" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <text x="535" y="336" font-size="20">📑</text>
+  <text x="565" y="335" font-size="12" font-weight="700" fill="#333">Reportes</text>
+  <text x="565" y="351" font-size="10" fill="#757575">5 vistas + CSV export</text>
+  <text x="565" y="366" font-size="10" fill="#757575">Log de auditoría</text>
+
+  <!-- Alertas -->
+  <rect x="500" y="388" width="175" height="65" rx="8" fill="#fff3e0" stroke="#e65100" stroke-width="2"/>
+  <text x="535" y="412" font-size="20">🔔</text>
+  <text x="565" y="411" font-size="12" font-weight="700" fill="#333">Alertas / Recordatorios</text>
+  <text x="565" y="427" font-size="10" fill="#757575">Multi-canal · Repetición</text>
+  <text x="565" y="442" font-size="10" fill="#757575">In-app · Email · WhatsApp</text>
+
+  <!-- ── COLUMN 4: SISTEMA ── -->
+  <text x="800" y="76" text-anchor="middle" font-size="12" font-weight="700" fill="#1565c0">SISTEMA / IA</text>
+
+  <!-- Asistente IA -->
+  <rect x="710" y="84" width="175" height="100" rx="8" fill="#e3f2fd" stroke="#1565c0" stroke-width="2.5"/>
+  <text x="745" y="108" font-size="22">🤖</text>
+  <text x="778" y="107" font-size="12" font-weight="700" fill="#1565c0">Asistente IA</text>
+  <text x="778" y="123" font-size="10" fill="#1976d2">Google Gemini Flash</text>
+  <text x="778" y="138" font-size="10" fill="#1976d2">Chat · Email · Imágenes</text>
+  <text x="778" y="153" font-size="10" fill="#1976d2">Contexto CRM real</text>
+
+  <!-- Catálogo Servicios -->
+  <rect x="710" y="196" width="175" height="65" rx="8" fill="#fafafa" stroke="#9e9e9e" stroke-width="1.5"/>
+  <text x="745" y="220" font-size="20">🗂️</text>
+  <text x="775" y="219" font-size="12" font-weight="700" fill="#333">Catálogo Servicios</text>
+  <text x="775" y="235" font-size="10" fill="#757575">FIJO / VARIABLE</text>
+  <text x="775" y="250" font-size="10" fill="#757575">Precio base</text>
+
+  <!-- Seguridad -->
+  <rect x="710" y="272" width="175" height="65" rx="8" fill="#fafafa" stroke="#9e9e9e" stroke-width="1.5"/>
+  <text x="745" y="296" font-size="20">🔐</text>
+  <text x="775" y="295" font-size="12" font-weight="700" fill="#333">Seguridad</text>
+  <text x="775" y="311" font-size="10" fill="#757575">JWT · BCrypt · Roles</text>
+  <text x="775" y="326" font-size="10" fill="#757575">ADMIN·MANAGER·USER·OP</text>
+
+  <!-- Usuarios -->
+  <rect x="710" y="348" width="175" height="65" rx="8" fill="#fafafa" stroke="#9e9e9e" stroke-width="1.5"/>
+  <text x="745" y="372" font-size="20">👤</text>
+  <text x="775" y="371" font-size="12" font-weight="700" fill="#333">Usuarios / Roles</text>
+  <text x="775" y="387" font-size="10" fill="#757575">CRUD · Permisos</text>
+  <text x="775" y="402" font-size="10" fill="#757575">Solo ADMIN</text>
+
+  <!-- Config -->
+  <rect x="710" y="424" width="175" height="42" rx="8" fill="#fafafa" stroke="#9e9e9e" stroke-width="1.5"/>
+  <text x="745" y="445" font-size="16">⚙️</text>
+  <text x="770" y="445" font-size="12" font-weight="700" fill="#333">Configuración</text>
+  <text x="770" y="459" font-size="10" fill="#757575">Parámetros del sistema</text>
+
+  <!-- Footer -->
+  <line x1="40" y1="478" x2="880" y2="478" stroke="#e0e0e0" stroke-width="1"/>
+  <text x="460" y="500" text-anchor="middle" font-size="10" fill="#bdbdbd">16 módulos · 30+ controladores REST · MySQL 8.0 · Spring Boot 2.2 · React 19</text>
+  <text x="460" y="518" text-anchor="middle" font-size="10" fill="#bdbdbd">VCM Group — Sistema CRM a medida · 2026</text>
+</svg>

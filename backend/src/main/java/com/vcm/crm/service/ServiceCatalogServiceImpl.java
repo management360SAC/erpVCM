@@ -44,8 +44,7 @@ public class ServiceCatalogServiceImpl implements ServiceCatalogService {
         s.setOrgId(req.getOrgId());
         s.setName(req.getName());
 
-        // 🔒 Siempre MENSUAL, ignoramos lo que venga en el request
-        s.setBillingModel(BillingModel.MENSUAL);
+        s.setBillingModel(req.getBillingModel() != null ? req.getBillingModel() : BillingModel.FIJO);
 
         // Evitar null en basePrice
         BigDecimal price = req.getBasePrice() != null ? req.getBasePrice() : BigDecimal.ZERO;
@@ -73,8 +72,9 @@ public class ServiceCatalogServiceImpl implements ServiceCatalogService {
             s.setIsActive(req.getIsActive());
         }
 
-        // 🔒 En update también mantenemos siempre MENSUAL
-        s.setBillingModel(BillingModel.MENSUAL);
+        if (req.getBillingModel() != null) {
+            s.setBillingModel(req.getBillingModel());
+        }
 
         s = repo.save(s);
         return toResp(s);

@@ -1,0 +1,21 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "feature/ai-backend",
+    "mail",
+    "main",
+    "origin"
+  ],
+  "parent": {
+    "feature/ai-backend": "main",
+    "mail": "main",
+    "main": null,
+    "origin": "main"
+  },
+  "order": [
+    "main",
+    "feature/ai-backend",
+    "mail",
+    "origin"
+  ]
+}

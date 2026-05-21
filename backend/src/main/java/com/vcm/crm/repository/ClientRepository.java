@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ClientRepository extends JpaRepository<Client, Integer> {
 
-  // Para la validación de duplicados por organización + razón social
   boolean existsByOrgIdAndLegalNameIgnoreCase(Integer orgId, String legalName);
+
+  java.util.Optional<Client> findByOrgIdAndLegalNameIgnoreCase(Integer orgId, String legalName);
 }
