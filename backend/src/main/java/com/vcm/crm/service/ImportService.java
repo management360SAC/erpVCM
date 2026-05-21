@@ -46,7 +46,7 @@ public class ImportService {
                 Row row = sheet.getRow(r);
                 if (row == null) continue;
                 String razonSocial = str(row, 3);
-                if (razonSocial == null || razonSocial.isBlank()) continue;
+                if (razonSocial == null || razonSocial.trim().isEmpty()) continue;
 
                 ImportPreviewRow preview = buildPreviewRow(row, r + 1);
                 filas.add(preview);
@@ -75,7 +75,7 @@ public class ImportService {
                 Row row = sheet.getRow(r);
                 if (row == null) continue;
                 String razonSocial = str(row, 3);
-                if (razonSocial == null || razonSocial.isBlank()) continue;
+                if (razonSocial == null || razonSocial.trim().isEmpty()) continue;
 
                 ImportResultRow result = new ImportResultRow();
                 result.setFila(r + 1);
@@ -160,7 +160,7 @@ public class ImportService {
             });
 
         // Actualizar contacto y sector siempre (incluso si el cliente ya existía)
-        if (sector != null && !sector.isBlank()) client.setSector(sector.trim());
+        if (sector != null && !sector.trim().isEmpty()) client.setSector(sector.trim());
         if (contacto != null && contacto.contains("@")) {
             client.setEmail(extractEmail(contacto));
         } else if (contacto != null && contacto.matches(".*\\d{6,}.*")) {
@@ -176,7 +176,7 @@ public class ImportService {
 
         // Título
         String detalle = str(row, 5);
-        deal.setTitle(detalle != null && !detalle.isBlank() ? truncate(detalle, 200) : razonSocial);
+        deal.setTitle(detalle != null && !detalle.trim().isEmpty() ? truncate(detalle, 200) : razonSocial);
 
         // Stage y status
         String estado = str(row, 13);
@@ -206,19 +206,19 @@ public class ImportService {
 
         // Tipo de servicio (VARIABLE / FIJO)
         String tipoServicio = str(row, 1);
-        if (tipoServicio != null && !tipoServicio.isBlank()) deal.setServiceType(tipoServicio.trim());
+        if (tipoServicio != null && !tipoServicio.trim().isEmpty()) deal.setServiceType(tipoServicio.trim());
 
         // Nº cotización externo
         String nroCotExt = str(row, 7);
-        if (nroCotExt != null && !nroCotExt.isBlank()) deal.setExternalQuoteNumber(nroCotExt.trim());
+        if (nroCotExt != null && !nroCotExt.trim().isEmpty()) deal.setExternalQuoteNumber(nroCotExt.trim());
 
         // N° Contrato / OS / OC / TDR
         String nroContrato = str(row, 10);
-        if (nroContrato != null && !nroContrato.isBlank()) deal.setContractReference(nroContrato.trim());
+        if (nroContrato != null && !nroContrato.trim().isEmpty()) deal.setContractReference(nroContrato.trim());
 
         // Factura
         String factura = str(row, 17);
-        if (factura != null && !factura.isBlank()) deal.setInvoiceReference(factura.trim());
+        if (factura != null && !factura.trim().isEmpty()) deal.setInvoiceReference(factura.trim());
 
         // Cobro (monto cobrado)
         Double cobro = num(row, 18);
@@ -317,7 +317,7 @@ public class ImportService {
 
     private String joinNotas(String... parts) {
         List<String> list = new ArrayList<>();
-        for (String p : parts) if (p != null && !p.isBlank()) list.add(p.trim());
+        for (String p : parts) if (p != null && !p.trim().isEmpty()) list.add(p.trim());
         return list.isEmpty() ? null : String.join(" | ", list);
     }
 
@@ -326,6 +326,6 @@ public class ImportService {
     }
 
     private void addIfPresent(List<CampoIgnorado> list, String col, String val, String motivo) {
-        if (val != null && !val.isBlank()) list.add(new CampoIgnorado(col, val, motivo));
+        if (val != null && !val.trim().isEmpty()) list.add(new CampoIgnorado(col, val, motivo));
     }
 }
