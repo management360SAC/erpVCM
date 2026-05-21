@@ -82,6 +82,44 @@ interface EmailDraft { to: string; subject: string; htmlBody: string; }
 
 function uid() { return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`; }
 
+// Superpone el logo VCM sobre la franja superior de la infografía usando Canvas
+function addLogoToImage(imageDataUrl: string): Promise<string> {
+  return new Promise((resolve) => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) { resolve(imageDataUrl); return; }
+
+    const img = new Image();
+    img.onload = () => {
+      canvas.width  = img.width;
+      canvas.height = img.height;
+
+      // 1. Dibujar la infografía completa
+      ctx.drawImage(img, 0, 0);
+
+      // 2. Fondo blanco sobre la franja superior (8% de alto)
+      const stripH = img.height * 0.08;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, img.width, stripH);
+
+      // 3. Superponer el logo centrado en la franja
+      const logo = new Image();
+      logo.onload = () => {
+        const logoH = stripH * 0.70;                         // 70% del alto de la franja
+        const logoW = (logo.width / logo.height) * logoH;
+        const x = (img.width - logoW) / 2;
+        const y = (stripH - logoH) / 2;
+        ctx.drawImage(logo, x, y, logoW, logoH);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      logo.onerror = () => resolve(canvas.toDataURL("image/png")); // sin logo si no carga
+      logo.src = "/images/logo_sinFondo.png";
+    };
+    img.onerror = () => resolve(imageDataUrl);
+    img.src = imageDataUrl;
+  });
+}
+
 // Parsea <<EMAIL_DRAFT>>...<<END_EMAIL_DRAFT>> del reply
 function parseEmailDraft(text: string): { clean: string; draft: EmailDraft | null } {
   const match = text.match(/<<EMAIL_DRAFT>>\s*([\s\S]*?)\s*<<END_EMAIL_DRAFT>>/);
@@ -232,7 +270,8 @@ export default function AsistenteIA() {
     setImgLoading(true); setImgError(null); setImgUrl(null);
     try {
       const res = await generateAiImage(prompt);
-      setImgUrl(res.imageUrl);
+      const withLogo = await addLogoToImage(res.imageUrl);
+      setImgUrl(withLogo);
     } catch (e: any) {
       setImgError(e?.response?.data?.error ?? "Error al generar la imagen. Intenta de nuevo.");
     } finally {
