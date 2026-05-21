@@ -60,17 +60,13 @@ export interface ImportResultResponse {
 export async function previewImport(file: File): Promise<ImportPreviewResponse> {
   const form = new FormData();
   form.append("file", file);
-  const res = await http.post<ImportPreviewResponse>("/api/import/preview", form, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  const res = await http.post<ImportPreviewResponse>("/import/preview", form);
   return res.data;
 }
 
 export async function ejecutarImport(file: File): Promise<ImportResultResponse> {
   const form = new FormData();
   form.append("file", file);
-  const res = await http.post<ImportResultResponse>("/api/import/ejecutar", form, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  const res = await http.post<ImportResultResponse>("/import/ejecutar", form);
   return res.data;
 }
