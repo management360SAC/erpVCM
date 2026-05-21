@@ -7,6 +7,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: Number(process.env.VITE_PORT || 5173),
+    allowedHosts: ['crm.vcm.com.pe', 'localhost', '95.216.168.66'],
     proxy: {
       '/api': {
         target: 'http://backend:8080',  // 👈 Usa el nombre del servicio Docker
