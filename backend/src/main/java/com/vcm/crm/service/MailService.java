@@ -2,6 +2,7 @@
 package com.vcm.crm.service;
 
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -13,6 +14,9 @@ import javax.mail.util.ByteArrayDataSource;
 public class MailService {
 
     private final ObjectProvider<JavaMailSender> senderProvider;
+
+    @Value("${spring.mail.username:}")
+    private String fromAddress;
 
     public MailService(ObjectProvider<JavaMailSender> senderProvider) {
         this.senderProvider = senderProvider;
@@ -38,34 +42,30 @@ public class MailService {
             MimeMessage msg = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(msg, true, "UTF-8");
 
+            helper.setFrom(fromAddress);
             helper.setTo(to);
             helper.setSubject(subject);
 
             String cid = "header-img";
 
-            // Construir HTML final con márgenes en la imagen embebida
             String htmlFinal = htmlBody;
             if (imageBytes != null && imageBytes.length > 0) {
-
                 String imgHtml =
                         "<img src='cid:" + cid + "' " +
                         "style='" +
-                        "display:block;" +              // respeta márgenes
-                        "margin:28px auto;" +           // margen arriba y abajo
-                        "max-width:92%;" +              // espacio lateral
-                        "border-radius:12px;" +         // borde suave
-                        "box-shadow:0 4px 16px rgba(0,0,0,0.15);" + // sombrita profesional
+                        "display:block;" +
+                        "margin:28px auto;" +
+                        "max-width:92%;" +
+                        "border-radius:12px;" +
+                        "box-shadow:0 4px 16px rgba(0,0,0,0.15);" +
                         "'/>";
-
                 htmlFinal = htmlFinal.replace("{{HEADER_IMG}}", imgHtml);
-
             } else {
                 htmlFinal = htmlFinal.replace("{{HEADER_IMG}}", "");
             }
 
             helper.setText(htmlFinal, true);
 
-            // Adjuntar la imagen inline
             if (imageBytes != null && imageBytes.length > 0) {
                 if (imageContentType == null) imageContentType = "image/png";
                 ByteArrayDataSource ds = new ByteArrayDataSource(imageBytes, imageContentType);
@@ -91,6 +91,7 @@ public class MailService {
         try {
             MimeMessage msg = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(msg, false, "UTF-8");
+            helper.setFrom(fromAddress);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlBody, true);
@@ -120,17 +121,15 @@ public class MailService {
             MimeMessage msg = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(msg, true, "UTF-8");
 
+            helper.setFrom(fromAddress);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlBody, true);
 
-            // Adjuntar PDF
             if (pdfBytes != null && pdfBytes.length > 0) {
-
                 String filename = (originalFilename != null && !originalFilename.isEmpty())
                         ? originalFilename
                         : "cotizacion.pdf";
-
                 ByteArrayDataSource ds = new ByteArrayDataSource(pdfBytes, "application/pdf");
                 helper.addAttachment(filename, ds);
             }

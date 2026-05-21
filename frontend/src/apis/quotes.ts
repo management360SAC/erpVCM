@@ -118,6 +118,13 @@ export async function getQuoteItems(id: number): Promise<QuoteItemResponse[]> {
 }
 
 /**
+ * Actualizar fecha de vigencia de una cotización
+ */
+export async function updateQuoteValidUntil(id: number, validUntil: string | null): Promise<void> {
+  await axiosInstance.patch(`/quotes/${id}/valid-until`, { validUntil });
+}
+
+/**
  * Crear y enviar cotización por email con PDF adjunto
  * ✅ FUNCIÓN CORREGIDA
  */

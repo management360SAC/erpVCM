@@ -27,6 +27,7 @@ import LeadSourcesDashboard from "../pages/marketing/LeadSourcesDashboard";
 import Pagos from "../pages/gestion/Pagos";
 import NuevaCotizacion from "../pages/cotizaciones/NuevaCotizacion";
 import HistorialCotizaciones from "../pages/cotizaciones/HistorialCotizaciones";
+import EditarCotizacion from "../pages/cotizaciones/EditarCotizacion";
 import AlertasRecordatoriosPage from "../pages/pipeline/AlertasRecordatoriosPage";
 import ServiciosContratados from "../pages/gestion/ServiciosContratados";
 import Proyectos from "../pages/gestion/Proyectos";
@@ -130,6 +131,7 @@ export const router = createBrowserRouter([
       // COTIZACIONES
       { path: "/cotizaciones", element: <HistorialCotizaciones />, errorElement: <NotFound /> },
       { path: "/cotizaciones/nueva", element: <NuevaCotizacion />, errorElement: <NotFound /> },
+      { path: "/cotizaciones/:id/editar", element: <EditarCotizacion />, errorElement: <NotFound /> },
 
       // Pipeline > Alertas y Recordatorios
       { path: "/pipeline/alertas-recordatorios", element: <AlertasRecordatoriosPage />, errorElement: <NotFound /> },
