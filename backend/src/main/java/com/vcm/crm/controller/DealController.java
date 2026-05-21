@@ -34,13 +34,22 @@ public class DealController {
             r.id = d.getId();
             r.title = d.getTitle();
             r.amount = d.getAmount();
+            r.currency = d.getCurrency();
             r.stage = d.getStage();
             r.status = d.getStatus();
             r.createdAt = d.getCreatedAt();
+            r.serviceType = d.getServiceType();
+            r.approvalDate = d.getApprovalDate();
+            r.contractReference = d.getContractReference();
+            r.externalQuoteNumber = d.getExternalQuoteNumber();
+            r.invoiceReference = d.getInvoiceReference();
+            r.collectedAmount = d.getCollectedAmount();
+            r.balanceAmount = d.getBalanceAmount();
 
             // clientName: primero Client, si no MarketingLead
             if (d.getClient() != null) {
                 r.clientName = d.getClient().getLegalName();
+                r.clientSector = d.getClient().getSector();
             } else if (d.getLead() != null) {
                 r.clientName = d.getLead().getCompanyName() != null
                     ? d.getLead().getCompanyName()

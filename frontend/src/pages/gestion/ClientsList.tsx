@@ -2,7 +2,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Avatar,
   Box,
   Breadcrumbs,
   Button,
@@ -34,6 +33,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import UploadFileIcon from "@mui/icons-material/UploadFile";
 
 import AppLayout from "../../layout/AppLayout";
 import {
@@ -295,6 +295,16 @@ export default function ClientsList() {
           onClick={() => nav("/clientes/nuevo")}
         >
           Nuevo Cliente
+        </Button>
+
+        {/* botón importación masiva */}
+        <Button
+          variant="outlined"
+          startIcon={<UploadFileIcon />}
+          onClick={() => nav("/clientes/importar")}
+          sx={{ borderColor: "#f57c00", color: "#f57c00", "&:hover": { borderColor: "#e65100", bgcolor: "#fff8f0" } }}
+        >
+          Importar Excel
         </Button>
       </Stack>
 

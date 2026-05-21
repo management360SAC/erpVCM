@@ -46,6 +46,7 @@ import IntegracionAds from "../pages/marketing/IntegracionAds";
 import LandingsForm from "../pages/marketing/LandingsForm";
 import NuevaCampanaEmail from "../pages/marketing/NuevaCampanaEmail";
 import AsistenteIA from "../pages/ai/AsistenteIA";
+import ImportarInteresados from "../pages/gestion/ImportarInteresados";
 
 function NotFound() {
   return (
@@ -93,6 +94,7 @@ export const router = createBrowserRouter([
       { path: "/clientes", element: <ClientsList />, errorElement: <NotFound /> },
       { path: "/clientes/nuevo", element: <ClientForm />, errorElement: <NotFound /> },
       { path: "/clientes/:id", element: <ClientForm />, errorElement: <NotFound /> },
+      { path: "/clientes/importar", element: <ImportarInteresados />, errorElement: <NotFound /> },
 
       // Gestión > Servicios (ruta oficial)
       { path: "/servicios", element: <ServicesList />, errorElement: <NotFound /> },

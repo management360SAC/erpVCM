@@ -40,7 +40,7 @@ export default function ServiceForm() {
   // Ajusta si tu app maneja multi-org desde contexto
   const [orgId, setOrgId] = useState<number>(1);
   const [name, setName] = useState<string>("");
-  const [billingModel, setBillingModel] = useState<BillingModel>("FIXED");
+  const [billingModel, setBillingModel] = useState<BillingModel>("MENSUAL");
   const [basePrice, setBasePrice] = useState<string>("0.00");
   const [active, setActive] = useState<boolean>(true);
 
@@ -199,22 +199,16 @@ export default function ServiceForm() {
             />
 
             <FormControl size="small" fullWidth>
-              <InputLabel>Modelo de cobro</InputLabel>
+              <InputLabel>Tipo de Servicio</InputLabel>
               <Select
-                label="Modelo de cobro"
+                label="Tipo de Servicio"
                 value={billingModel}
                 onChange={(e) =>
                   setBillingModel(e.target.value as BillingModel)
                 }
               >
-              <MenuItem value="FIXED">Fijo</MenuItem>
-              <MenuItem value="UNIT">Por Unidad</MenuItem>
-              <MenuItem value="MENSUAL">Mensual</MenuItem>
-              <MenuItem value="ANUAL">Anual</MenuItem>
-              <MenuItem value="PROYECTO">Proyecto</MenuItem>
-              <MenuItem value="POR_HORA">Por hora</MenuItem>
-              <MenuItem value="LICENCIA">Licencia</MenuItem>
-
+                <MenuItem value="FIJO">Fijo</MenuItem>
+                <MenuItem value="VARIABLE">Variable</MenuItem>
               </Select>
             </FormControl>
 

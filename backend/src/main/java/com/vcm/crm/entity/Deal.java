@@ -36,7 +36,31 @@ public class Deal {
     
     @Column(name = "owner_user_id")
     private Long ownerUserId;
-    
+
+    @Column(name = "currency", length = 3)
+    private String currency = "PEN";
+
+    @Column(name = "service_type", length = 20)
+    private String serviceType;
+
+    @Column(name = "approval_date")
+    private java.time.LocalDate approvalDate;
+
+    @Column(name = "contract_reference", length = 150)
+    private String contractReference;
+
+    @Column(name = "external_quote_number", length = 100)
+    private String externalQuoteNumber;
+
+    @Column(name = "invoice_reference", length = 150)
+    private String invoiceReference;
+
+    @Column(name = "collected_amount", precision = 12, scale = 2)
+    private BigDecimal collectedAmount;
+
+    @Column(name = "balance_amount", precision = 12, scale = 2)
+    private BigDecimal balanceAmount;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
     
@@ -121,6 +145,30 @@ public class Deal {
     public void setOwnerUserId(Long ownerUserId) {
         this.ownerUserId = ownerUserId;
     }
+
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
+
+    public String getServiceType() { return serviceType; }
+    public void setServiceType(String serviceType) { this.serviceType = serviceType; }
+
+    public java.time.LocalDate getApprovalDate() { return approvalDate; }
+    public void setApprovalDate(java.time.LocalDate approvalDate) { this.approvalDate = approvalDate; }
+
+    public String getContractReference() { return contractReference; }
+    public void setContractReference(String contractReference) { this.contractReference = contractReference; }
+
+    public String getExternalQuoteNumber() { return externalQuoteNumber; }
+    public void setExternalQuoteNumber(String externalQuoteNumber) { this.externalQuoteNumber = externalQuoteNumber; }
+
+    public String getInvoiceReference() { return invoiceReference; }
+    public void setInvoiceReference(String invoiceReference) { this.invoiceReference = invoiceReference; }
+
+    public BigDecimal getCollectedAmount() { return collectedAmount; }
+    public void setCollectedAmount(BigDecimal collectedAmount) { this.collectedAmount = collectedAmount; }
+
+    public BigDecimal getBalanceAmount() { return balanceAmount; }
+    public void setBalanceAmount(BigDecimal balanceAmount) { this.balanceAmount = balanceAmount; }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;

@@ -252,12 +252,13 @@ export default function ServicesList() {
                   <TableCell>
                     <Chip
                       label={
-                        String(r.billingModel) === "FIXED"
+                        String(r.billingModel) === "FIJO"
                           ? "Fijo"
-                          : String(r.billingModel) === "HOURLY"
-                          ? "Por hora"
-                          : "Por unidad"
+                          : String(r.billingModel) === "VARIABLE"
+                          ? "Variable"
+                          : String(r.billingModel)
                       }
+                      color={String(r.billingModel) === "FIJO" ? "primary" : "default"}
                       size="small"
                     />
                   </TableCell>
