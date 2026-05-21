@@ -27,10 +27,10 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import AppLayout from "../../layout/AppLayout";
 import {
   ejecutarImport,
-  ImportPreviewResponse,
-  ImportPreviewRow,
-  ImportResultResponse,
   previewImport,
+  type ImportPreviewResponse,
+  type ImportPreviewRow,
+  type ImportResultResponse,
 } from "../../apis/importApi";
 
 const STAGE_LABELS: Record<string, { label: string; color: "default" | "warning" | "success" | "error" }> = {
