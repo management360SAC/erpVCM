@@ -97,8 +97,8 @@ function addLogoToImage(imageDataUrl: string): Promise<string> {
       // 1. Dibujar la infografía completa
       ctx.drawImage(img, 0, 0);
 
-      // 2. Franja superior blanca (12% del alto)
-      const stripH = img.height * 0.12;
+      // 2. Franja superior blanca (24% del alto)
+      const stripH = img.height * 0.24;
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, img.width, stripH);
 
