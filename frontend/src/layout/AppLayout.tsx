@@ -501,12 +501,12 @@ export default function AppLayout({ children, title, showFilters }: Props) {
       <Box
         sx={{
           width: "100%",
-          height: mini ? 72 : 160,
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          px: mini ? 0.5 : 1,
-          py: 1,
+          px: mini ? 1 : 1.5,
+          pt: mini ? 1 : 1.5,
+          pb: mini ? 1 : 1.5,
           flexShrink: 0,
         }}
       >
@@ -517,11 +517,12 @@ export default function AppLayout({ children, title, showFilters }: Props) {
             ((e.target as HTMLImageElement).style.display = "none")
           }
           style={{
-            maxHeight: mini ? 54 : 148,
-            maxWidth: mini ? 54 : "100%",
+            maxHeight: mini ? 40 : 80,
+            maxWidth: mini ? 40 : "100%",
             width: mini ? "auto" : "100%",
             height: "auto",
             objectFit: "contain",
+            display: "block",
             transition: "all 0.25s ease",
           }}
         />
