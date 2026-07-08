@@ -42,7 +42,7 @@ public class ServiceCatalogServiceImpl implements ServiceCatalogService {
     public ServiceResponse create(CreateServiceRequest req) {
         ServiceCatalog s = new ServiceCatalog();
         s.setOrgId(req.getOrgId() != null ? req.getOrgId() : 1);
-        s.setName(req.getName());
+        s.setName(req.getName().toUpperCase());
 
         s.setBillingModel(req.getBillingModel() != null ? req.getBillingModel() : BillingModel.FIJO);
 
@@ -63,7 +63,7 @@ public class ServiceCatalogServiceImpl implements ServiceCatalogService {
                 .orElseThrow(() -> new IllegalArgumentException("Servicio no encontrado"));
 
         if (req.getName() != null) {
-            s.setName(req.getName());
+            s.setName(req.getName().toUpperCase());
         }
         if (req.getBasePrice() != null) {
             s.setBasePrice(req.getBasePrice());

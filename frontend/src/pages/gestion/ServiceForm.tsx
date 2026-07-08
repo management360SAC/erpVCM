@@ -181,7 +181,8 @@ export default function ServiceForm() {
               label="Nombre del servicio"
               size="small"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => setName(e.target.value.toUpperCase())}
+              inputProps={{ style: { textTransform: "uppercase" } }}
               required
               fullWidth
             />
