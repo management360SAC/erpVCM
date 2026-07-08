@@ -121,6 +121,8 @@ const Drawer = styled(MuiDrawer, {
     backgroundColor: "#fffaf5",
     boxShadow: "2px 0 16px rgba(245,124,0,0.08)",
     overflowX: "hidden",
+    top: 64,
+    height: "calc(100% - 64px)",
     ...(open ? openedMixin(theme) : closedMixin(theme)),
   },
 }));
@@ -718,7 +720,6 @@ export default function AppLayout({ children, title, showFilters }: Props) {
         open={sideOpen}
         sx={{ display: { xs: "none", sm: "block" } }}
       >
-        <DrawerSpacer />
         {drawerContent}
       </Drawer>
 
@@ -733,7 +734,6 @@ export default function AppLayout({ children, title, showFilters }: Props) {
           "& .MuiDrawer-paper": { width: drawerWidthOpen },
         }}
       >
-        <DrawerSpacer />
         {drawerContent}
       </MuiDrawer>
 
