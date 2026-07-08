@@ -144,7 +144,7 @@ public class MetaIntegrationServiceImpl implements MetaIntegrationService {
                 }
             }
 
-            if (lead.getFullName() == null || lead.getFullName().isBlank()) {
+            if (lead.getFullName() == null || lead.getFullName().trim().isEmpty()) {
                 lead.setFullName("Lead Meta #" + leadgenId);
             }
 
