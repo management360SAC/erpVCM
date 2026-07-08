@@ -504,24 +504,22 @@ export default function AppLayout({ children, title, showFilters }: Props) {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          px: mini ? 1 : 1.5,
-          pt: mini ? 1 : 1.5,
-          pb: mini ? 1 : 1.5,
+          px: mini ? 1 : 2,
+          py: 1.5,
           flexShrink: 0,
         }}
       >
         <img
-          src="/images/logo_sinFondo.png"
+          src="/images/logo_sinFondo_trim.png"
           alt="GRUPO VCM"
           onError={(e) =>
             ((e.target as HTMLImageElement).style.display = "none")
           }
           style={{
-            maxHeight: mini ? 40 : 80,
-            maxWidth: mini ? 40 : "100%",
+            maxHeight: mini ? 36 : 72,
+            maxWidth: mini ? 36 : "100%",
             width: mini ? "auto" : "100%",
             height: "auto",
-            objectFit: "contain",
             display: "block",
             transition: "all 0.25s ease",
           }}
