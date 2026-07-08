@@ -502,28 +502,43 @@ export default function AppLayout({ children, title, showFilters }: Props) {
         sx={{
           width: "100%",
           display: "flex",
-          justifyContent: "center",
+          flexDirection: "column",
           alignItems: "center",
-          px: mini ? 1 : 2,
-          py: 1.5,
+          justifyContent: "center",
+          pt: mini ? 1.5 : 2,
+          pb: mini ? 1.5 : 1.5,
+          px: 1,
+          gap: mini ? 0 : "10px",
           flexShrink: 0,
         }}
       >
+        {/* Isotipo */}
         <img
-          src="/images/logo_sinFondo_trim.png"
-          alt="GRUPO VCM"
+          src="/images/vcm_isotipo.png"
+          alt="VCM isotipo"
           onError={(e) =>
             ((e.target as HTMLImageElement).style.display = "none")
           }
           style={{
-            maxHeight: mini ? 36 : 72,
-            maxWidth: mini ? 36 : "100%",
-            width: mini ? "auto" : "100%",
+            width: mini ? 32 : 64,
             height: "auto",
             display: "block",
             transition: "all 0.25s ease",
           }}
         />
+        {/* Texto VCM */}
+        {!mini && (
+          <img
+            src="/images/vcm_texto.png"
+            alt="VCM"
+            style={{
+              width: 108,
+              height: "auto",
+              display: "block",
+              opacity: 0.85,
+            }}
+          />
+        )}
       </Box>
 
       <Divider />
