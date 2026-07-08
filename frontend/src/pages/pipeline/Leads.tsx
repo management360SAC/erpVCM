@@ -118,6 +118,7 @@ async function listLeads(params: {
   size?: number;
   q?: string;
   status?: string;
+  sourceCode?: string;
 }) {
   const token =
     localStorage.getItem("accessToken") || localStorage.getItem("token");
@@ -127,6 +128,7 @@ async function listLeads(params: {
   qs.set("size", String(params.size ?? 10));
   if (params.q) qs.set("q", params.q);
   if (params.status && params.status !== "TODOS") qs.set("status", params.status);
+  if (params.sourceCode && params.sourceCode !== "TODOS") qs.set("sourceCode", params.sourceCode);
 
   const res = await fetch(`/api/leads?${qs.toString()}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -265,6 +267,7 @@ export default function Leads() {
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState(q);
   const [status, setStatus] = useState<"TODOS" | LeadStatus>("TODOS");
+  const [sourceFilter, setSourceFilter] = useState<string>("TODOS");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
@@ -355,6 +358,7 @@ export default function Leads() {
         size: rowsPerPage,
         q: debouncedQ.trim() || undefined,
         status: status || undefined,
+        sourceCode: sourceFilter !== "TODOS" ? sourceFilter : undefined,
       });
       setRows(data.content || []);
       setTotalElements(data.totalElements || 0);
@@ -389,7 +393,7 @@ export default function Leads() {
     if (!token) return;
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, rowsPerPage, debouncedQ, status]);
+  }, [page, rowsPerPage, debouncedQ, status, sourceFilter]);
 
   // cargar catálogo de servicios una sola vez
   useEffect(() => {
@@ -695,6 +699,28 @@ export default function Leads() {
           </Select>
         </FormControl>
 
+        <FormControl size="small" sx={{ minWidth: 190 }}>
+          <InputLabel>Fuente</InputLabel>
+          <Select
+            label="Fuente"
+            value={sourceFilter}
+            onChange={(e) => {
+              setSourceFilter(e.target.value);
+              setPage(0);
+            }}
+          >
+            <MenuItem value="TODOS">Todas las fuentes</MenuItem>
+            <MenuItem value="META_LEAD_ADS">
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <Box sx={{ width: 10, height: 10, borderRadius: "50%", bgcolor: "#1877F2" }} />
+                <span>Meta / Facebook</span>
+              </Stack>
+            </MenuItem>
+            <MenuItem value="crm-manual">CRM Manual</MenuItem>
+            <MenuItem value="landing-web">Landing Web</MenuItem>
+          </Select>
+        </FormControl>
+
         <Box sx={{ flex: 1 }} />
 
         <Button
@@ -763,13 +789,24 @@ export default function Leads() {
                     <Stack direction="row" spacing={1} alignItems="center">
                       <PersonAddAltOutlinedIcon fontSize="small" />
                       <Box>
-                        <Typography fontWeight={700}>
-                          {r.fullName}
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                        >
+                        <Stack direction="row" spacing={0.75} alignItems="center">
+                          <Typography fontWeight={700}>{r.fullName}</Typography>
+                          {r.sourceCode === "META_LEAD_ADS" && (
+                            <Chip
+                              size="small"
+                              label="Meta"
+                              sx={{
+                                bgcolor: "#1877F2",
+                                color: "#fff",
+                                fontWeight: 700,
+                                fontSize: "0.68rem",
+                                height: 18,
+                                "& .MuiChip-label": { px: 0.75 },
+                              }}
+                            />
+                          )}
+                        </Stack>
+                        <Typography variant="body2" color="text.secondary">
                           {r.formName || r.sourceCode || "—"}
                         </Typography>
                       </Box>
