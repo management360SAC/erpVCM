@@ -121,8 +121,8 @@ const Drawer = styled(MuiDrawer, {
     backgroundColor: "#fffaf5",
     boxShadow: "2px 0 16px rgba(245,124,0,0.08)",
     overflowX: "hidden",
-    top: 64,
-    height: "calc(100% - 64px)",
+    top: 0,
+    height: "100%",
     ...(open ? openedMixin(theme) : closedMixin(theme)),
   },
 }));
@@ -614,7 +614,7 @@ export default function AppLayout({ children, title, showFilters }: Props) {
 
   return (
     <Box sx={{ display: "flex", bgcolor: "#f7f9fc", minHeight: "100vh" }}>
-      {/* AppBar */}
+      {/* AppBar — solo sobre el área de contenido, no sobre el sidebar */}
       <AppBar
         position="fixed"
         elevation={0}
@@ -625,7 +625,12 @@ export default function AppLayout({ children, title, showFilters }: Props) {
           boxShadow: "0 1px 12px rgba(0,0,0,0.06)",
           backdropFilter: "blur(8px)",
           WebkitBackdropFilter: "blur(8px)",
-          pl: {
+          width: {
+            sm: sideOpen
+              ? `calc(100% - ${drawerWidthOpen}px)`
+              : `calc(100% - ${drawerWidthClosed}px)`,
+          },
+          ml: {
             sm: sideOpen ? `${drawerWidthOpen}px` : `${drawerWidthClosed}px`,
           },
         }}
