@@ -77,6 +77,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 // nps / leads públicos (formularios externos)
                 .antMatchers("/api/nps/public/**").permitAll()
                 .antMatchers("/api/leads/public/**").permitAll()
+                // Meta webhook (público: Meta lo llama sin JWT)
+                .antMatchers(HttpMethod.GET, "/api/webhooks/meta").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/webhooks/meta").permitAll()
                 // bcrypt y test: solo ADMIN
                 .antMatchers("/bcrypt/**").hasRole("ADMIN")
                 .antMatchers("/api/test/**").hasRole("ADMIN")
@@ -127,6 +130,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/api/proyecciones/**").authenticated()
                 .antMatchers(HttpMethod.POST, "/api/proyecciones/**").hasAnyRole("ADMIN", "MANAGER")
                 .antMatchers(HttpMethod.DELETE, "/api/proyecciones/**").hasAnyRole("ADMIN", "MANAGER")
+
+                // integrations (Meta, etc.)
+                .antMatchers("/api/integrations/**").hasAnyRole("ADMIN", "MANAGER")
 
                 // marketing
                 .antMatchers("/api/marketing/**").hasAnyRole("ADMIN", "USER", "MANAGER")

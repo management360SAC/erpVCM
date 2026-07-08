@@ -83,8 +83,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import UserMenu from "../components/UserMenu";
 
 // ==== Layout tokens ====
-const drawerWidthOpen = 280;
-const drawerWidthClosed = 72;
+const drawerWidthOpen = 260;
+const drawerWidthClosed = 68;
 
 // Colores basados en el logo VCM
 const VCM_ORANGE = "#f57c00";
@@ -117,9 +117,10 @@ const Drawer = styled(MuiDrawer, {
   whiteSpace: "nowrap",
   boxSizing: "border-box",
   "& .MuiDrawer-paper": {
-    borderRight: "1px solid #eef2f7",
-    backgroundColor: VCM_BG_SOFT,
-    boxShadow: "2px 0 20px rgba(0,0,0,0.06)",
+    borderRight: "1px solid #f1c9a5",
+    backgroundColor: "#fffaf5",
+    boxShadow: "2px 0 16px rgba(245,124,0,0.08)",
+    overflowX: "hidden",
     ...(open ? openedMixin(theme) : closedMixin(theme)),
   },
 }));
@@ -152,23 +153,27 @@ function Group({
           onClick={onToggle}
           sx={{
             px: 1.5,
-            minHeight: 44,
+            minHeight: 42,
             justifyContent: mini ? "center" : "flex-start",
             borderRadius: 2,
+            mx: 0.5,
             transition: "background-color 0.2s ease, color 0.2s ease",
             cursor: "pointer",
-            ...(isOpen && !mini && { bgcolor: "rgba(245,124,0,0.06)" }),
+            ...(isOpen && !mini && {
+              bgcolor: "rgba(245,124,0,0.07)",
+              "& .MuiListItemIcon-root": { color: VCM_ORANGE },
+            }),
             "&:hover": {
-              bgcolor: VCM_ORANGE_SOFT,
+              bgcolor: "rgba(245,124,0,0.1)",
               "& .MuiListItemIcon-root": { color: VCM_ORANGE },
             },
           }}
         >
           <ListItemIcon
             sx={{
-              minWidth: 36,
+              minWidth: 32,
               mr: mini ? 0 : 1,
-              color: "#6b7280",
+              color: isOpen ? VCM_ORANGE : "#6b7280",
               transition: "color 0.2s ease",
             }}
           >
@@ -177,17 +182,22 @@ function Group({
           {!mini && (
             <ListItemText
               primary={title}
-              primaryTypographyProps={{ fontWeight: 700 }}
+              primaryTypographyProps={{
+                fontWeight: 700,
+                fontSize: "0.82rem",
+                color: "#1f2937",
+                noWrap: true,
+              }}
             />
           )}
           {!mini && (
             <ExpandMoreIcon
               sx={{
                 color: "#9ca3af",
-                fontSize: 18,
+                fontSize: 16,
                 flexShrink: 0,
                 transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-                transition: "transform 0.25s ease-in-out, color 0.2s ease",
+                transition: "transform 0.25s ease-in-out",
               }}
             />
           )}
@@ -203,37 +213,45 @@ function Group({
                 component={NavLink}
                 to={it.path}
                 sx={{
-                  pl: mini ? 1 : 4.5,
-                  pr: 1.5,
-                  minHeight: 40,
+                  pl: mini ? 1 : 3.5,
+                  pr: 1,
+                  minHeight: 36,
                   justifyContent: mini ? "center" : "flex-start",
                   borderRadius: 2,
-                  transition: "background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease",
+                  mx: 0.5,
+                  transition: "background-color 0.2s ease, box-shadow 0.2s ease",
                   cursor: "pointer",
                   color: "#374151",
                   "& .MuiListItemIcon-root": {
-                    color: "#6b7280",
+                    color: "#9ca3af",
                     transition: "color 0.2s ease",
                   },
                   "&:hover": {
-                    bgcolor: VCM_ORANGE_SOFT,
+                    bgcolor: "rgba(245,124,0,0.08)",
                     color: "#1f2937",
                     "& .MuiListItemIcon-root": { color: VCM_ORANGE },
                   },
                   "&.active": {
-                    bgcolor: "rgba(245,124,0,0.11)",
+                    bgcolor: "rgba(245,124,0,0.12)",
                     color: VCM_ORANGE,
-                    fontWeight: 700,
                     boxShadow: `inset 3px 0 0 ${VCM_ORANGE}`,
                     "& .MuiListItemIcon-root": { color: VCM_ORANGE },
-                    "& .MuiListItemText-primary": { fontWeight: 700 },
+                    "& .MuiListItemText-primary": { fontWeight: 700, color: VCM_ORANGE },
                   },
                 }}
               >
-                <ListItemIcon sx={{ minWidth: 36, mr: mini ? 0 : 1 }}>
+                <ListItemIcon sx={{ minWidth: 30, mr: mini ? 0 : 0.75 }}>
                   {it.icon}
                 </ListItemIcon>
-                {!mini && <ListItemText primary={it.text} />}
+                {!mini && (
+                  <ListItemText
+                    primary={it.text}
+                    primaryTypographyProps={{
+                      fontSize: "0.8rem",
+                      noWrap: true,
+                    }}
+                  />
+                )}
               </ListItemButton>
             </ListItem>
           ))}
@@ -483,11 +501,13 @@ export default function AppLayout({ children, title, showFilters }: Props) {
       <Box
         sx={{
           width: "100%",
-          height: 110,
+          height: mini ? 64 : 88,
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          pb: 1,
+          px: mini ? 0.5 : 2,
+          py: 1,
+          flexShrink: 0,
         }}
       >
         <img
@@ -497,10 +517,12 @@ export default function AppLayout({ children, title, showFilters }: Props) {
             ((e.target as HTMLImageElement).style.display = "none")
           }
           style={{
-            height: mini ? 50 : 220,
+            maxHeight: mini ? 44 : 70,
+            maxWidth: mini ? 44 : 200,
             width: "auto",
+            height: "auto",
             objectFit: "contain",
-            transition: "0.25s ease",
+            transition: "all 0.25s ease",
           }}
         />
       </Box>

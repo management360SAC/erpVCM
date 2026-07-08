@@ -10,7 +10,6 @@ public class ServiceDtos {
 
     @Data
     public static class CreateServiceRequest {
-        @NotNull
         private Integer orgId;
 
         @NotBlank

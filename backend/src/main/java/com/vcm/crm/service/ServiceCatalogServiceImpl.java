@@ -41,7 +41,7 @@ public class ServiceCatalogServiceImpl implements ServiceCatalogService {
     @Transactional
     public ServiceResponse create(CreateServiceRequest req) {
         ServiceCatalog s = new ServiceCatalog();
-        s.setOrgId(req.getOrgId());
+        s.setOrgId(req.getOrgId() != null ? req.getOrgId() : 1);
         s.setName(req.getName());
 
         s.setBillingModel(req.getBillingModel() != null ? req.getBillingModel() : BillingModel.FIJO);

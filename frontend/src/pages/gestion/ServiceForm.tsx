@@ -38,7 +38,6 @@ export default function ServiceForm() {
   const [errMsg, setErrMsg] = useState<string | null>(null);
 
   // Ajusta si tu app maneja multi-org desde contexto
-  const [orgId, setOrgId] = useState<number>(1);
   const [name, setName] = useState<string>("");
   const [billingModel, setBillingModel] = useState<BillingModel>("MENSUAL");
   const [basePrice, setBasePrice] = useState<string>("0.00");
@@ -65,7 +64,6 @@ export default function ServiceForm() {
             return;
           }
           const data: ServiceResponse = await getService(numId);
-          setOrgId(data.orgId);
           setName(data.name);
           setBillingModel(data.billingModel);
           setBasePrice(
@@ -101,7 +99,7 @@ export default function ServiceForm() {
 
       if (mode === "new") {
         await createService({
-          orgId,
+          orgId: 1,
           name: name.trim(),
           billingModel,
           basePrice: priceNumber,
@@ -178,16 +176,6 @@ export default function ServiceForm() {
                 {errMsg}
               </Typography>
             )}
-
-            <TextField
-              label="Organización (orgId)"
-              type="number"
-              size="small"
-              value={orgId}
-              onChange={(e) => setOrgId(Number(e.target.value))}
-              helperText="ID de la organización"
-              fullWidth
-            />
 
             <TextField
               label="Nombre del servicio"
