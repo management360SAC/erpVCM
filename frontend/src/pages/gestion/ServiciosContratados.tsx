@@ -38,6 +38,7 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import ConstructionIcon from "@mui/icons-material/Construction";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import AddIcon from "@mui/icons-material/Add";
+import EditCalendarIcon from "@mui/icons-material/EditCalendar";
 
 import AppLayout from "../../layout/AppLayout";
 import { useNavigate } from "react-router-dom";
@@ -224,6 +225,36 @@ export default function ServiciosContratados() {
     }
   };
 
+  // ================== MODAL "Cambiar fecha fin" ==================
+  const [extendDialogOpen, setExtendDialogOpen] = useState(false);
+  const [extendService, setExtendService] = useState<ContractedServiceDTO | null>(null);
+  const [extendDate, setExtendDate] = useState<string>("");
+  const [savingExtend, setSavingExtend] = useState(false);
+
+  const openExtendDialog = (row: ContractedServiceDTO) => {
+    setExtendService(row);
+    setExtendDate(row.endDate ? new Date(row.endDate).toISOString().slice(0, 10) : "");
+    setExtendDialogOpen(true);
+  };
+
+  const handleConfirmExtend = async () => {
+    if (!extendService || !extendDate) return;
+    try {
+      setSavingExtend(true);
+      await updateExecutionStatus(extendService.id, "EN_EJECUCION", extendDate);
+      setExtendDialogOpen(false);
+      setExtendService(null);
+      setExtendDate("");
+      await fetchData();
+    } catch (e: any) {
+      const msg =
+        e?.response?.data?.message || e?.message || "No se pudo actualizar la fecha.";
+      setErrorMsg(msg);
+    } finally {
+      setSavingExtend(false);
+    }
+  };
+
   // ================== MODAL INFO ==================
   const [infoDialogOpen, setInfoDialogOpen] = useState(false);
   const [infoService, setInfoService] =
@@ -262,14 +293,12 @@ export default function ServiciosContratados() {
 
   const onComplete = async (id: number) => {
     try {
-      const res = await completeIfPossible(id);
-      console.debug("completeIfPossible:", res);
+      await updateExecutionStatus(id, "COMPLETADO");
       fetchData();
     } catch (e: any) {
       const msg =
         e?.response?.data?.message || e?.message || "No se pudo completar.";
       setErrorMsg(msg);
-      console.error("completeIfPossible ->", e);
     }
   };
 
@@ -497,6 +526,28 @@ export default function ServiciosContratados() {
                         </IconButton>
                       )}
 
+                      {/* Cambiar fecha fin */}
+                      {r.status === "EN_EJECUCION" && (
+                        <IconButton
+                          color="warning"
+                          onClick={() => openExtendDialog(r)}
+                          title="Cambiar fecha fin del servicio"
+                        >
+                          <EditCalendarIcon fontSize="small" />
+                        </IconButton>
+                      )}
+
+                      {/* Marcar como COMPLETADO */}
+                      {r.status === "EN_EJECUCION" && (
+                        <IconButton
+                          color="success"
+                          onClick={() => onComplete(r.id)}
+                          title="Marcar como completado"
+                        >
+                          <DoneAllIcon fontSize="small" />
+                        </IconButton>
+                      )}
+
                       {/* Cancelar */}
                       {r.status !== "CANCELADO" && r.status !== "COMPLETADO" && (
                         <IconButton
@@ -528,6 +579,55 @@ export default function ServiciosContratados() {
           labelRowsPerPage="Filas:"
         />
       </TableContainer>
+
+      {/* Dialog: cambiar fecha fin */}
+      <Dialog
+        open={extendDialogOpen}
+        onClose={() => !savingExtend && setExtendDialogOpen(false)}
+        fullWidth
+        maxWidth="xs"
+        PaperProps={{ sx: { borderRadius: 3 } }}
+      >
+        <DialogTitle sx={{ fontWeight: 800 }}>
+          Cambiar fecha fin del servicio
+        </DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={2}>
+            <Typography>
+              Servicio: <strong>{extendService?.number}</strong>
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Puedes extender o anticipar la fecha de fin. El día siguiente a la
+              nueva fecha se enviará la encuesta NPS al cliente.
+            </Typography>
+            <TextField
+              label="Nueva fecha fin"
+              type="date"
+              fullWidth
+              InputLabelProps={{ shrink: true }}
+              value={extendDate}
+              onChange={(e) => setExtendDate(e.target.value)}
+              disabled={savingExtend}
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setExtendDialogOpen(false)}
+            disabled={savingExtend}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={handleConfirmExtend}
+            disabled={savingExtend || !extendDate}
+          >
+            {savingExtend ? <CircularProgress size={18} /> : "Guardar fecha"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Dialog: iniciar servicio */}
       <Dialog

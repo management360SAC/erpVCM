@@ -26,35 +26,30 @@ public class NpsAutoInviteService {
     private final NpsInviteRepository npsInviteRepository;
     private final MailService mailService; // usamos el mismo que en EmailCampaignService
 
-    @Value("${app.nps.base-url:https://tu-dominio.com/nps}")
-    private String npsBaseUrl;
+    @Value("${app.publicBaseUrl:http://localhost:5173}")
+    private String publicBaseUrl;
 
     /**
-     * Job diario: envía invitaciones NPS el día de end_date.
+     * Job diario: envía invitaciones NPS un día después de end_date.
      * Corre a las 09:00 AM hora Lima.
      */
     @Scheduled(cron = "0 0 9 * * *", zone = "America/Lima")
     public void sendDailyNpsInvites() {
         LocalDate today = LocalDate.now(ZoneId.of("America/Lima"));
-        log.info("[NPS] Iniciando envío automático de encuestas para fecha {}", today);
+        LocalDate yesterday = today.minusDays(1);
+        log.info("[NPS] Iniciando envío automático de encuestas para servicios finalizados el {}", yesterday);
 
-        // 1) Buscar servicios que terminan hoy y están activos
+        // 1) Buscar servicios con end_date = ayer (active=false porque COMPLETADO los desactiva)
         List<ClientService> endingToday =
-                clientServiceRepository.findByEndDateAndActiveTrue(today);
+                clientServiceRepository.findByEndDate(yesterday);
 
         int sent = 0;
 
         for (ClientService cs : endingToday) {
-            Long clientServiceId = cs.getId().longValue();
+            Integer clientServiceId = cs.getId();
 
             // 2) Evitar duplicados (si ya existe invitación para este client_service)
-            boolean alreadyExists = npsInviteRepository
-                    .findAll()
-                    .stream()
-                    .anyMatch(inv -> inv.getClientService() != null
-                            && inv.getClientService().getId().longValue() == clientServiceId);
-
-            if (alreadyExists) {
+            if (npsInviteRepository.existsByClientService_Id(clientServiceId)) {
                 log.info("[NPS] Ya existe invitación para client_service_id={}, se omite.", clientServiceId);
                 continue;
             }
@@ -74,7 +69,7 @@ public class NpsAutoInviteService {
             }
         }
 
-        log.info("[NPS] Proceso diario completado. Invitaciones enviadas: {}", sent);
+        log.info("[NPS] Proceso diario completado. Invitaciones enviadas: {} (para end_date={})", sent, yesterday);
     }
 
     // ----- Helpers -----
@@ -97,7 +92,7 @@ public class NpsAutoInviteService {
         npsInviteRepository.save(invite);
 
         // 3) Construir link
-        String surveyUrl = npsBaseUrl + "?token=" + token;
+        String surveyUrl = publicBaseUrl + "/nps?token=" + token;
 
         // 4) Enviar correo con HTML
         String subject = "Ayúdanos calificando el servicio que recibiste";
@@ -125,8 +120,7 @@ public class NpsAutoInviteService {
                 ? cs.getService().getName()
                 : "nuestro servicio";
 
-        // 👉 Imagen local desde tu frontend Vite
-        String bannerUrl = "http://localhost:5173/images/encuestaVCM.png";
+        String bannerUrl = publicBaseUrl + "/images/encuestaVCM.png";
 
         return ""
                 + "<!DOCTYPE html>"

@@ -194,10 +194,9 @@ public class ContractedServiceService {
                         clientSvc.setEndDate(requestedEndDate);
                     }
                 } else if (newStatus == ServiceStatus.CANCELADO || newStatus == ServiceStatus.COMPLETADO) {
-                    clientSvc.setActive(Boolean.FALSE); // INACTIVO
-                    if (clientSvc.getEndDate() == null) {
-                        clientSvc.setEndDate(requestedEndDate != null ? requestedEndDate : today);
-                    }
+                    clientSvc.setActive(Boolean.FALSE);
+                    // Siempre sincronizar end_date para que el job NPS dispare en la fecha correcta
+                    clientSvc.setEndDate(requestedEndDate != null ? requestedEndDate : today);
                 }
 
                 clientServiceRepository.save(clientSvc);
