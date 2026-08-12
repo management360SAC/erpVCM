@@ -70,9 +70,12 @@ public interface ContractedServiceRepository extends JpaRepository<ContractedSer
     @Query("select cs from ContractedService cs " +
        "where cs.orgId = :orgId and cs.collectionStatus = 'PENDIENTE_COBRO'")
        List<ContractedService> findPendingCollection(@Param("orgId") Long orgId);
-@Query("SELECT cs FROM ContractedService cs " +
-       "WHERE cs.orgId = :orgId AND cs.collectionStatus = 'PENDIENTE_COBRO'")
-List<ContractedService> findPendingBilling(@Param("orgId") Long orgId);
+    @Query("SELECT cs FROM ContractedService cs " +
+           "WHERE cs.orgId = :orgId AND cs.collectionStatus = 'PENDIENTE_COBRO'")
+    List<ContractedService> findPendingBilling(@Param("orgId") Long orgId);
 
-
+    // Servicios EN_EJECUCION cuya fecha de fin ya llegó o pasó
+    @Query("SELECT cs FROM ContractedService cs " +
+           "WHERE cs.status = 'EN_EJECUCION' AND cs.endDate <= :today")
+    List<ContractedService> findDueForCompletion(@Param("today") java.time.LocalDate today);
 }

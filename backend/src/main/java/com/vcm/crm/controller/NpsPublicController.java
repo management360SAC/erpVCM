@@ -41,6 +41,10 @@ public class NpsPublicController {
   public ResponseEntity<?> answer(@Valid @RequestBody NpsAnswerRequest request) {
     npsPublicService.registerAnswer(
         request.getToken(),
+        request.getQ1(),
+        request.getQ2(),
+        request.getQ3(),
+        request.getQ4(),
         request.getScore(),
         request.getComment()
     );

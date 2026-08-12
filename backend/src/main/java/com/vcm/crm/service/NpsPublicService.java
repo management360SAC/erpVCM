@@ -28,11 +28,10 @@ public class NpsPublicService {
     }
 
     @Transactional
-    public void registerAnswer(String token, int score, String comment) {
+    public void registerAnswer(String token, Integer q1, Integer q2, Integer q3, Integer q4, int score, String comment) {
         NpsInvite invite = getInvite(token);
         LocalDateTime now = LocalDateTime.now(LIMA);
 
-        // Validaciones básicas
         if (invite.getExpiresAt() != null && invite.getExpiresAt().isBefore(now)) {
             throw new IllegalStateException("La invitación está vencida.");
         }
@@ -45,16 +44,18 @@ public class NpsPublicService {
             throw new IllegalStateException("La invitación no está asociada a un servicio válido.");
         }
 
-        // 👉 AQUÍ es donde se setean los campos obligatorios
         NpsResponse response = NpsResponse.builder()
-                .clientService(cs)   // esto rellena client_service_id
-                .score(score)        // obligatorio
+                .clientService(cs)
+                .q1(q1)
+                .q2(q2)
+                .q3(q3)
+                .q4(q4)
+                .score(score)
                 .comment(comment)
                 .build();
 
         responseRepository.save(response);
 
-        // Actualizamos la invitación
         invite.setStatus(NpsInvite.Status.RESPONDED);
         invite.setRespondedAt(now);
         invite.setUpdatedAt(now);

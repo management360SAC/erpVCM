@@ -1,6 +1,5 @@
 import { http } from "./http";
 
-// ---- tipos ----
 export type NpsFilters = {
   from: string;   // "YYYY-MM-DD"
   to: string;     // "YYYY-MM-DD"
@@ -14,17 +13,31 @@ export type NpsSummary = {
   passives: number;
   detractors: number;
   total: number;
-  periodStart: string; // "YYYY-MM-DD"
-  periodEnd: string;   // "YYYY-MM-DD"
+  periodStart: string;
+  periodEnd: string;
+  responseRate?: number;
+  responses?: number;
+  sent?: number;
+  csatAvg?: number;
+  // Promedios por pregunta (1-5)
+  avgQ1?: number;
+  avgQ2?: number;
+  avgQ3?: number;
+  avgQ4?: number;
 };
 
 export type NpsResponse = {
   id: number;
   clientName: string;
   serviceName: string;
+  q1?: number;
+  q2?: number;
+  q3?: number;
+  q4?: number;
   score: number;
   comment?: string;
-  createdAt: string; // "YYYY-MM-DD"
+  createdAt: string;
+  label?: string;
 };
 
 export type Paged<T> = {
@@ -35,18 +48,12 @@ export type Paged<T> = {
   totalPages: number;
 };
 
-// ---- llamadas ----
-// OJO: ruta correcta = /api/ops/nps/...
 export async function fetchNpsSummary(filters: NpsFilters) {
   const { data } = await http.post<NpsSummary>("/ops/nps/summary", filters);
   return data;
 }
 
-export async function fetchNpsResponses(
-  filters: NpsFilters,
-  page = 0,
-  size = 10
-) {
+export async function fetchNpsResponses(filters: NpsFilters, page = 0, size = 10) {
   const { data } = await http.post<Paged<NpsResponse>>(
     `/ops/nps/responses?page=${page}&size=${size}`,
     filters

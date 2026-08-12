@@ -5,37 +5,16 @@ import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-/**
- * DTOs agrupados para NPS (encuestas de satisfacción).
- *
- * IMPORTANTE:
- *  - El archivo debe llamarse EXACTAMENTE NpsDtos.java
- *  - Debe estar en el paquete com.vcm.crm.dto
- */
 public class NpsDtos {
 
-  // =========================
-  //  Request desde el front
-  // =========================
   @Data
   public static class NpsRequest {
-    /**
-     * Rango de fechas (incluyente) en formato LocalDate.
-     * En el front se envían como "YYYY-MM-DD".
-     */
     private LocalDate from;
     private LocalDate to;
-
-    /** Opcional: filtrar por cliente */
     private Integer clientId;
-
-    /** Opcional: filtrar por servicio */
     private Integer serviceId;
   }
 
-  // =========================
-  //  Resumen NPS
-  // =========================
   @Data
   @Builder
   @NoArgsConstructor
@@ -50,16 +29,18 @@ public class NpsDtos {
     private LocalDate periodStart;
     private LocalDate periodEnd;
 
-    // Campos extra que usa el dashboard
-    private Double responseRate; // porcentaje 0-100
-    private Long responses;      // # respuestas recibidas
-    private Long sent;           // # encuestas enviadas
-    private Double csatAvg;      // promedio CSAT (si lo usas)
+    private Double responseRate;
+    private Long responses;
+    private Long sent;
+    private Double csatAvg;
+
+    // Promedios por pregunta (1-5)
+    private Double avgQ1;
+    private Double avgQ2;
+    private Double avgQ3;
+    private Double avgQ4;
   }
 
-  // =========================
-  //  Respuesta individual NPS
-  // =========================
   @Data
   @Builder
   @NoArgsConstructor
@@ -68,14 +49,13 @@ public class NpsDtos {
     private Integer id;
     private String clientName;
     private String serviceName;
-    private int score;               // 0-10
-    private String comment;          // comentario opcional
-    private LocalDateTime createdAt; // fecha/hora de respuesta
-
-    /**
-     * Label (Promoter / Passive / Detractor).
-     * Puede ser null y el front lo recalcula si quiere.
-     */
+    private Integer q1;
+    private Integer q2;
+    private Integer q3;
+    private Integer q4;
+    private int score;
+    private String comment;
+    private LocalDateTime createdAt;
     private String label;
   }
 }

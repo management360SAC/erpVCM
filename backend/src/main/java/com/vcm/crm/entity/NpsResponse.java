@@ -21,6 +21,23 @@ public class NpsResponse {
     @JoinColumn(name = "client_service_id", nullable = false)
     private ClientService clientService;
 
+    // Pregunta 1: Calidad general del servicio (1-5)
+    @Column(name = "q1")
+    private Integer q1;
+
+    // Pregunta 2: Comunicación y atención del equipo (1-5)
+    @Column(name = "q2")
+    private Integer q2;
+
+    // Pregunta 3: Cumplimiento de plazos (1-5)
+    @Column(name = "q3")
+    private Integer q3;
+
+    // Pregunta 4: Satisfacción con los resultados (1-5)
+    @Column(name = "q4")
+    private Integer q4;
+
+    // Pregunta 5 / NPS: Probabilidad de recomendación (0-10)
     @Column(nullable = false)
     private Integer score;
 

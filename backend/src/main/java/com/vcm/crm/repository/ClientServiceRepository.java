@@ -31,4 +31,7 @@ public interface ClientServiceRepository extends JpaRepository<ClientService, In
   List<ClientService> findByEndDateAfterAndActiveTrue(LocalDate date);
   List<ClientService> findByActiveTrue();
   List<ClientService> findByEndDateAndActiveTrue(LocalDate endDate);
+
+  // Para NPS: servicios finalizados ayer (active=false por COMPLETADO/CANCELADO)
+  List<ClientService> findByEndDate(LocalDate endDate);
 }
