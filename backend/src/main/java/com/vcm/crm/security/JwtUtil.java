@@ -24,11 +24,13 @@ public class JwtUtil {
     this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
   }
 
-  /** Genera un token con subject=username y ttl en milisegundos */
-  public String generateToken(String username, long ttlMillis) {
+  /** Genera un token con subject=username, ttl en milisegundos y un claim "type"
+   *  ("access" | "refresh") para que no puedan usarse indistintamente. */
+  public String generateToken(String username, long ttlMillis, String type) {
     long now = System.currentTimeMillis();
     return Jwts.builder()
         .setSubject(username)
+        .claim("type", type)
         .setIssuedAt(new Date(now))
         .setExpiration(new Date(now + ttlMillis))
         .signWith(key, SignatureAlgorithm.HS256)
@@ -37,10 +39,19 @@ public class JwtUtil {
 
   /** Atajos usados por AuthController */
   public String generateAccessToken(String username) {
-    return generateToken(username, ACCESS_TTL_MS);
+    return generateToken(username, ACCESS_TTL_MS, "access");
   }
   public String generateRefreshToken(String username) {
-    return generateToken(username, REFRESH_TTL_MS);
+    return generateToken(username, REFRESH_TTL_MS, "refresh");
+  }
+
+  /** Tipo del token ("access"/"refresh"), o null si no se puede leer (token viejo sin claim, inválido, etc.) */
+  public String getType(String token) {
+    try {
+      return parse(token).getBody().get("type", String.class);
+    } catch (JwtException | IllegalArgumentException e) {
+      return null;
+    }
   }
 
   /** Parsea y valida firma; lanza excepción si es inválido/expirado */

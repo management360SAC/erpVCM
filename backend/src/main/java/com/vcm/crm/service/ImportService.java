@@ -169,8 +169,14 @@ public class ImportService {
         client = clientRepo.save(client);
         result.setClienteId(client.getId().longValue());
 
-        // 2. Crear deal con TODOS los campos del Excel
-        Deal deal = new Deal();
+        // 2. Crear o actualizar deal con TODOS los campos del Excel
+        // Si la fila trae Nº de cotización externo, se usa como llave natural para no
+        // duplicar la oportunidad cuando se vuelve a subir el mismo archivo.
+        String nroCotExtKey = str(row, 7);
+        Deal deal = (nroCotExtKey != null && !nroCotExtKey.trim().isEmpty())
+            ? dealRepo.findFirstByOrgIdAndClient_IdAndExternalQuoteNumber(ORG_ID, client.getId(), nroCotExtKey.trim())
+                .orElseGet(Deal::new)
+            : new Deal();
         deal.setOrgId(ORG_ID);
         deal.setClient(client);
 
@@ -235,11 +241,13 @@ public class ImportService {
         // Por ahora los unimos como referencia en externalQuoteNumber si está vacío
         // En realidad se exponen en el DTO directamente — futuro campo notes en deal
 
+        boolean dealYaExistia = deal.getId() != null;
         dealRepo.save(deal);
         result.setDealId(deal.getId());
         result.setMensaje(
             (yaExiste ? "Cliente actualizado" : "Cliente creado")
-            + " | Deal creado (stage: " + deal.getStage() + ", moneda: " + (deal.getCurrency() != null ? deal.getCurrency() : "—") + ")"
+            + " | Deal " + (dealYaExistia ? "actualizado" : "creado")
+            + " (stage: " + deal.getStage() + ", moneda: " + (deal.getCurrency() != null ? deal.getCurrency() : "—") + ")"
         );
     }
 

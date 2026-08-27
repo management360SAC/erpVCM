@@ -10,11 +10,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -28,6 +32,30 @@ public class NpsAutoInviteService {
 
     @Value("${app.publicBaseUrl:http://localhost:5173}")
     private String publicBaseUrl;
+
+    private byte[] logoBytes;
+    private byte[] bannerBytes;
+
+    /** Imágenes embebidas en el classpath del backend (branding/*), para que
+     *  siempre se vean en el correo sin depender de que publicBaseUrl sea alcanzable. */
+    private byte[] loadClasspathImage(String path) {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream(path)) {
+            return (is != null) ? StreamUtils.copyToByteArray(is) : new byte[0];
+        } catch (Exception e) {
+            log.warn("[NPS] No se pudo cargar la imagen '{}' para el correo: {}", path, e.getMessage());
+            return new byte[0];
+        }
+    }
+
+    private byte[] getLogoBytes() {
+        if (logoBytes == null) logoBytes = loadClasspathImage("branding/logo_vcm.png");
+        return logoBytes;
+    }
+
+    private byte[] getBannerBytes() {
+        if (bannerBytes == null) bannerBytes = loadClasspathImage("branding/encuesta_banner.jpg");
+        return bannerBytes;
+    }
 
     /**
      * Job diario: envía invitaciones NPS un día después de end_date.
@@ -48,9 +76,12 @@ public class NpsAutoInviteService {
         for (ClientService cs : endingToday) {
             Integer clientServiceId = cs.getId();
 
-            // 2) Evitar duplicados (si ya existe invitación para este client_service)
-            if (npsInviteRepository.existsByClientService_Id(clientServiceId)) {
-                log.info("[NPS] Ya existe invitación para client_service_id={}, se omite.", clientServiceId);
+            // 2) Evitar duplicados del MISMO CICLO (mismo client_service_id + mismo end_date).
+            //    Un servicio renovado reutiliza la misma fila client_service con un end_date
+            //    nuevo, así que sí debe recibir una encuesta por cada renovación.
+            if (npsInviteRepository.existsByClientService_IdAndServiceEndDate(clientServiceId, cs.getEndDate())) {
+                log.info("[NPS] Ya existe invitación para client_service_id={} en el ciclo que termina {}, se omite.",
+                        clientServiceId, cs.getEndDate());
                 continue;
             }
 
@@ -88,6 +119,7 @@ public class NpsAutoInviteService {
         invite.setSentAt(now);
         invite.setExpiresAt(now.plusDays(15)); // por ejemplo, 15 días de vigencia
         invite.setStatus(NpsInvite.Status.SENT);
+        invite.setServiceEndDate(cs.getEndDate());
 
         npsInviteRepository.save(invite);
 
@@ -98,7 +130,10 @@ public class NpsAutoInviteService {
         String subject = "Ayúdanos calificando el servicio que recibiste";
         String bodyHtml = buildEmailBody(client, cs, surveyUrl);
 
-        mailService.sendHtml(client.getEmail(), subject, bodyHtml);
+        Map<String, MailService.InlineImage> images = new HashMap<>();
+        images.put("vcm-logo", new MailService.InlineImage(getLogoBytes(), "image/png"));
+        images.put("vcm-banner", new MailService.InlineImage(getBannerBytes(), "image/jpeg"));
+        mailService.sendHtmlWithInlineImages(client.getEmail(), subject, bodyHtml, images);
 
         log.info("[NPS] Invitación enviada a {} para client_service_id={}",
                 client.getEmail(), cs.getId());
@@ -119,8 +154,6 @@ public class NpsAutoInviteService {
         String serviceName = (cs.getService() != null && cs.getService().getName() != null)
                 ? cs.getService().getName()
                 : "nuestro servicio";
-
-        String bannerUrl = publicBaseUrl + "/images/encuestaVCM.png";
 
         return ""
                 + "<!DOCTYPE html>"
@@ -144,9 +177,7 @@ public class NpsAutoInviteService {
                 // Encabezado
                 + "          <tr>"
                 + "            <td style='padding:24px 32px 8px 32px;text-align:center;'>"
-                + "              <div style='display:inline-block;width:32px;height:32px;border-radius:999px;"
-                + "                          background:#0ea5e9;color:#ffffff;font-weight:bold;"
-                + "                          line-height:32px;font-size:18px;'>?</div>"
+                + "              <img src='cid:vcm-logo' alt='VCM' style='height:150px;display:block;margin:0 auto 12px auto;' />"
                 + "              <h2 style='margin:16px 0 8px 0;font-size:22px;color:#111827;'>"
                 + "                Hola " + escapeHtml(clientName) + ", ¿cómo calificas el servicio que recibiste?"
                 + "              </h2>"
@@ -175,7 +206,7 @@ public class NpsAutoInviteService {
                 // Imagen centrada con padding en TODOS los lados
                 + "          <tr>"
                 + "            <td style='padding:32px 32px 32px 32px; text-align:center;'>"
-                + "              <img src='" + bannerUrl + "' alt='Encuesta VCM' "
+                + "              <img src='cid:vcm-banner' alt='Encuesta VCM' "
                 + "                   style='width:100%; max-width:500px; display:block; margin:0 auto; border:0;' />"
                 + "            </td>"
                 + "          </tr>"

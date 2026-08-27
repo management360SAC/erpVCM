@@ -11,6 +11,7 @@ public class SendQuoteRequest {
     private Totals totals;          // totales de la cotización
     private SendQuoteMeta meta;     // info extra (org, sector, deal, etc.)
     private String validUntil;      // fecha de vigencia como string (yyyy-MM-dd)
+    private String currency;        // PEN|USD (opcional, default PEN)
 
     // ===== getters / setters =====
 
@@ -60,6 +61,14 @@ public class SendQuoteRequest {
 
     public void setValidUntil(String validUntil) {
         this.validUntil = validUntil;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 
     // ================== clases internas ==================

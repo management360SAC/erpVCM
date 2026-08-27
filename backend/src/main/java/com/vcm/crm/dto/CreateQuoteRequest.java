@@ -7,6 +7,7 @@ public class CreateQuoteRequest {
   public Integer orgId;        // opcional en raíz
   public Long clientId;
   public String sector;        // opcional en raíz
+  public String currency;      // PEN|USD (opcional, default PEN)
   public String emailTo;       // forma 1 (preferida)
   public String sendTo;        // compatibilidad con el front actual
   public Totals totals;

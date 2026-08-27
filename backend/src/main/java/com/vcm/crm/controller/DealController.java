@@ -1,11 +1,17 @@
 package com.vcm.crm.controller;
 
+import com.vcm.crm.dto.CreateDealRequest;
 import com.vcm.crm.dto.DealResponse;
+import com.vcm.crm.entity.Client;
 import com.vcm.crm.entity.Deal;
+import com.vcm.crm.entity.ServiceCatalog;
 import com.vcm.crm.entity.Usuario;
+import com.vcm.crm.repository.ClientRepository;
 import com.vcm.crm.repository.DealRepository;
+import com.vcm.crm.repository.ServiceCatalogRepository;
 import com.vcm.crm.repository.UsuarioRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -17,10 +23,97 @@ public class DealController {
 
     private final DealRepository dealRepo;
     private final UsuarioRepository usuarioRepo;
+    private final ClientRepository clientRepo;
+    private final ServiceCatalogRepository serviceCatalogRepo;
 
-    public DealController(DealRepository dealRepo, UsuarioRepository usuarioRepo) {
+    public DealController(
+            DealRepository dealRepo,
+            UsuarioRepository usuarioRepo,
+            ClientRepository clientRepo,
+            ServiceCatalogRepository serviceCatalogRepo) {
         this.dealRepo = dealRepo;
         this.usuarioRepo = usuarioRepo;
+        this.clientRepo = clientRepo;
+        this.serviceCatalogRepo = serviceCatalogRepo;
+    }
+
+    /** POST /api/deals — crea una nueva oportunidad en el embudo.
+     *  Si no se envía clientId pero sí newClient, registra el cliente al vuelo
+     *  (reutilizando uno existente con el mismo nombre si ya existe). */
+    @PostMapping
+    @Transactional
+    public ResponseEntity<?> create(@RequestBody CreateDealRequest req) {
+        if (req.title == null || req.title.trim().isEmpty()) {
+            Map<String, String> err = new HashMap<>();
+            err.put("error", "El título de la oportunidad es requerido");
+            return ResponseEntity.badRequest().body(err);
+        }
+
+        Deal deal = new Deal();
+        deal.setOrgId(1);
+        deal.setTitle(req.title.trim());
+        deal.setAmount(req.amount);
+        deal.setCurrency((req.currency != null && !req.currency.trim().isEmpty()) ? req.currency : "PEN");
+        deal.setStage((req.stage != null && !req.stage.trim().isEmpty()) ? req.stage : "PROSPECTO");
+        deal.setStatus("OPEN");
+
+        if (req.clientId != null) {
+            Client client = clientRepo.findById(req.clientId).orElse(null);
+            if (client == null) {
+                Map<String, String> err = new HashMap<>();
+                err.put("error", "Cliente no encontrado");
+                return ResponseEntity.badRequest().body(err);
+            }
+            deal.setClient(client);
+        } else if (req.newClient != null && req.newClient.legalName != null && !req.newClient.legalName.trim().isEmpty()) {
+            String legalName = req.newClient.legalName.trim();
+            Client client = clientRepo.findByOrgIdAndLegalNameIgnoreCase(1, legalName).orElseGet(() -> {
+                Client c = new Client();
+                c.setOrgId(1);
+                c.setLegalName(legalName);
+                c.setTaxId(blankToNull(req.newClient.taxId));
+                c.setEmail(blankToNull(req.newClient.email));
+                c.setPhone(blankToNull(req.newClient.phone));
+                return clientRepo.save(c);
+            });
+            deal.setClient(client);
+        }
+
+        if (req.serviceId != null) {
+            ServiceCatalog service = serviceCatalogRepo.findById(req.serviceId).orElse(null);
+            if (service == null) {
+                Map<String, String> err = new HashMap<>();
+                err.put("error", "Servicio no encontrado");
+                return ResponseEntity.badRequest().body(err);
+            }
+            deal.setService(service);
+        }
+
+        Deal saved = dealRepo.save(deal);
+
+        DealResponse r = new DealResponse();
+        r.id = saved.getId();
+        r.title = saved.getTitle();
+        r.amount = saved.getAmount();
+        r.currency = saved.getCurrency();
+        r.stage = saved.getStage();
+        r.status = saved.getStatus();
+        r.createdAt = saved.getCreatedAt();
+        if (saved.getClient() != null) {
+            r.clientId = saved.getClient().getId();
+            r.clientName = saved.getClient().getLegalName();
+            r.clientSector = saved.getClient().getSector();
+        }
+        if (saved.getService() != null) {
+            r.serviceId = saved.getService().getId();
+            r.serviceName = saved.getService().getName();
+        }
+
+        return ResponseEntity.ok(r);
+    }
+
+    private String blankToNull(String s) {
+        return (s == null || s.trim().isEmpty()) ? null : s.trim();
     }
 
     /** GET /api/deals/board — retorna { deals: [...] } */
@@ -48,12 +141,18 @@ public class DealController {
 
             // clientName: primero Client, si no MarketingLead
             if (d.getClient() != null) {
+                r.clientId = d.getClient().getId();
                 r.clientName = d.getClient().getLegalName();
                 r.clientSector = d.getClient().getSector();
             } else if (d.getLead() != null) {
                 r.clientName = d.getLead().getCompanyName() != null
                     ? d.getLead().getCompanyName()
                     : d.getLead().getName();
+            }
+
+            if (d.getService() != null) {
+                r.serviceId = d.getService().getId();
+                r.serviceName = d.getService().getName();
             }
 
             // ownerName: buscar usuario por ownerUserId

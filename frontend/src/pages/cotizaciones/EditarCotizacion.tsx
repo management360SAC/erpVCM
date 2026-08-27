@@ -38,9 +38,10 @@ const STATUS_LABEL: Record<string, { label: string; color: "default" | "warning"
   CONVERTIDA: { label: "Convertida", color: "success" },
 };
 
-function fmtSoles(v: number | undefined) {
-  if (v == null) return "S/ 0.00";
-  return `S/ ${Number(v).toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+function fmtMoney(v: number | undefined, currency?: string) {
+  const symbol = currency === "USD" ? "US$" : "S/";
+  if (v == null) return `${symbol} 0.00`;
+  return `${symbol} ${Number(v).toLocaleString("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 export default function EditarCotizacion() {
@@ -163,15 +164,15 @@ export default function EditarCotizacion() {
               </Grid>
               <Grid item xs={6} md={3}>
                 <Typography variant="caption" color="text.secondary">Subtotal</Typography>
-                <Typography>{fmtSoles(quote.subTotal)}</Typography>
+                <Typography>{fmtMoney(quote.subTotal, quote.currency)}</Typography>
               </Grid>
               <Grid item xs={6} md={3}>
                 <Typography variant="caption" color="text.secondary">IGV (18%)</Typography>
-                <Typography>{fmtSoles(quote.igv)}</Typography>
+                <Typography>{fmtMoney(quote.igv, quote.currency)}</Typography>
               </Grid>
               <Grid item xs={6} md={3}>
                 <Typography variant="caption" color="text.secondary">Total</Typography>
-                <Typography fontWeight={800} color="#f97316">{fmtSoles(quote.total)}</Typography>
+                <Typography fontWeight={800} color="#f97316">{fmtMoney(quote.total, quote.currency)}</Typography>
               </Grid>
               <Grid item xs={6} md={3}>
                 <Typography variant="caption" color="text.secondary">Creado</Typography>
@@ -192,14 +193,14 @@ export default function EditarCotizacion() {
                 <TableHead>
                   <TableRow sx={{ bgcolor: "#f5f5f5" }}>
                     <TableCell sx={{ fontWeight: 700 }}>Servicio</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 700 }}>Costo (S/)</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 700 }}>Costo ({quote.currency === "USD" ? "US$" : "S/"})</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {items.map((it) => (
                     <TableRow key={it.id}>
                       <TableCell>{it.name}</TableCell>
-                      <TableCell align="right">{fmtSoles(it.cost)}</TableCell>
+                      <TableCell align="right">{fmtMoney(it.cost, quote.currency)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

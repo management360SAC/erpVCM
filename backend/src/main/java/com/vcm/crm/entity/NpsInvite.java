@@ -1,6 +1,7 @@
 package com.vcm.crm.entity;
 import lombok.*;
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -37,6 +38,12 @@ public class NpsInvite {
 
     @Column(name = "used_at")
     private LocalDateTime usedAt;
+
+    /** Snapshot del end_date del client_service al momento de crear la invitación.
+     *  Permite distinguir ciclos de un mismo servicio renovado (el mismo client_service_id
+     *  se reutiliza en cada renovación), para no bloquear la encuesta del ciclo siguiente. */
+    @Column(name = "service_end_date")
+    private LocalDate serviceEndDate;
 
     // ✅ CAMPO AGREGADO
     @Column(name = "updated_at")

@@ -11,6 +11,7 @@ public class QuoteResponse {
     public String number;
     public Long clientId;
     public String sector;
+    public String currency;
     public BigDecimal subTotal;
     public BigDecimal igv;
     public BigDecimal total;

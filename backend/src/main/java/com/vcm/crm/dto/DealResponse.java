@@ -6,7 +6,10 @@ import java.time.LocalDateTime;
 public class DealResponse {
     public Long id;
     public String title;
+    public Integer clientId;
     public String clientName;
+    public Integer serviceId;
+    public String serviceName;
     public BigDecimal amount;
     public String currency;
     public String ownerName;

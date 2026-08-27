@@ -39,17 +39,24 @@ export interface QuoteMeta {
   sector: 'PRIVADO' | 'PUBLICO';
 }
 
+export type Currency = "PEN" | "USD";
+
+export interface QuoteMetaWithDeal extends QuoteMeta {
+  relatedDealId?: number | null;
+}
+
 export interface CreateQuotePayload {
   clientId: number | null;
   sendTo: string;
   emailTo?: string;
   items: QuoteItem[];
   totals: QuoteTotals;
-  meta: QuoteMeta;
+  meta: QuoteMetaWithDeal;
   validUntil?: string | null;
   notes?: string;
   sector?: string;
   orgId?: number;
+  currency?: Currency;
 }
 
 export interface QuoteResponse {
@@ -57,6 +64,7 @@ export interface QuoteResponse {
   number: string;
   clientId: number;
   sector: string;
+  currency?: Currency;
   subTotal: number;
   igv: number;
   total: number;
@@ -156,6 +164,40 @@ export async function sendQuoteEmail(
   if (!response.ok) {
     const error = await response.json();
     console.error('Error al enviar cotización:', error);
+    throw new Error(JSON.stringify(error));
+  }
+
+  return response.json();
+}
+
+/**
+ * Enviar "cotización rápida" desde el Embudo de Ventas.
+ * Genera y envía el mismo PDF por correo, pero NO se guarda en el
+ * historial de cotizaciones (no crea fila en `quotes`). Si el payload
+ * trae meta.relatedDealId, el backend mueve esa oportunidad a "Propuesta".
+ */
+export async function sendQuickQuoteEmail(
+  payload: CreateQuotePayload,
+  pdfBlob: Blob,
+  filename: string
+): Promise<{ sent: boolean; sentTo: string; dealId: number | null }> {
+  const formData = new FormData();
+  formData.append('data', JSON.stringify(payload));
+  formData.append('file', pdfBlob, filename);
+
+  const token = getAuthToken();
+
+  const response = await fetch(`${API_BASE_URL}/quotes/quick/email`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error('Error al enviar cotización rápida:', error);
     throw new Error(JSON.stringify(error));
   }
 

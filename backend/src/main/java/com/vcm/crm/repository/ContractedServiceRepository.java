@@ -67,11 +67,13 @@ public interface ContractedServiceRepository extends JpaRepository<ContractedSer
            "ORDER BY cs.number DESC")
     List<String> findLastNumberByYear(@Param("orgId") Long orgId, @Param("year") String year);
 
+    // Incluye COBRO_PARCIAL: una factura con abono parcial sigue teniendo saldo pendiente
+    // y debe seguir apareciendo en el panel de cobranza.
     @Query("select cs from ContractedService cs " +
-       "where cs.orgId = :orgId and cs.collectionStatus = 'PENDIENTE_COBRO'")
+       "where cs.orgId = :orgId and cs.collectionStatus IN ('PENDIENTE_COBRO', 'COBRO_PARCIAL')")
        List<ContractedService> findPendingCollection(@Param("orgId") Long orgId);
     @Query("SELECT cs FROM ContractedService cs " +
-           "WHERE cs.orgId = :orgId AND cs.collectionStatus = 'PENDIENTE_COBRO'")
+           "WHERE cs.orgId = :orgId AND cs.collectionStatus IN ('PENDIENTE_COBRO', 'COBRO_PARCIAL')")
     List<ContractedService> findPendingBilling(@Param("orgId") Long orgId);
 
     // Servicios EN_EJECUCION cuya fecha de fin ya llegó o pasó

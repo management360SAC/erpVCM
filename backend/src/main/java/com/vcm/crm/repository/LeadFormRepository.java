@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface LeadFormRepository extends JpaRepository<LeadForm, Integer> {
   Optional<LeadForm> findBySlugAndActiveTrue(String slug);
+  boolean existsBySlug(String slug);
 }

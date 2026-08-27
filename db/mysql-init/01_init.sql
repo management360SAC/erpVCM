@@ -242,7 +242,7 @@ CREATE TABLE IF NOT EXISTS lead_sources (
 -- 3) Leads capturados
 CREATE TABLE IF NOT EXISTS leads (
   id              INT AUTO_INCREMENT PRIMARY KEY,
-  form_id         INT NOT NULL,
+  form_id         INT NULL,                  -- NULL cuando el lead se crea manualmente desde el CRM (no viene de una landing)
   source_code     VARCHAR(50) NOT NULL,      -- referencia textual (google-ads, facebook-ads, etc.)
   utm_source      VARCHAR(100) NULL,
   utm_medium      VARCHAR(100) NULL,
@@ -258,7 +258,7 @@ CREATE TABLE IF NOT EXISTS leads (
   phone           VARCHAR(50)  NULL,
   message         TEXT NULL,
 
-  status          ENUM('NEW','QUALIFIED','WON','LOST') DEFAULT 'NEW',
+  status          ENUM('NEW','IN_PROGRESS','CONTACTED','CONVERTED','DISCARDED') NOT NULL DEFAULT 'NEW',
 
   client_id       INT NULL,
   service_id      INT NULL,
@@ -279,7 +279,7 @@ CREATE TABLE IF NOT EXISTS deal (
   id             BIGINT NOT NULL AUTO_INCREMENT,
   org_id         INT NOT NULL DEFAULT 1,
   client_id      INT NULL,
-  lead_id        INT NULL,
+  lead_id        BIGINT NULL,
   title          VARCHAR(200) NOT NULL,
   amount         DECIMAL(12,2) NULL,
   stage          VARCHAR(30) NOT NULL DEFAULT 'PROSPECTO',
@@ -289,8 +289,7 @@ CREATE TABLE IF NOT EXISTS deal (
   updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   KEY idx_deal_client (client_id),
-  KEY idx_deal_lead (lead_id),
-  CONSTRAINT fk_deal_lead FOREIGN KEY (lead_id) REFERENCES marketing_lead (id) ON DELETE SET NULL
+  KEY idx_deal_lead (lead_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- =====================================================================

@@ -103,6 +103,7 @@ public class QuoteService {
     q.setNumber(number);
     q.setClientId(req.clientId);
     q.setSector(sector);
+    q.setCurrency((req.currency != null && !req.currency.trim().isEmpty()) ? req.currency : "PEN");
     q.setSubTotal(n(req.totals != null ? req.totals.subTotal : null));
     q.setIgv(n(req.totals != null ? req.totals.igv : null));
     q.setTotal(n(req.totals != null ? req.totals.total : null));
@@ -205,6 +206,7 @@ public class QuoteService {
     req.sendTo = dto.getSendTo();
     req.emailTo = dto.getSendTo(); // por si usas emailTo en el front
     req.validUntil = dto.getValidUntil();
+    req.currency = dto.getCurrency();
 
     if (dto.getTotals() != null) {
       CreateQuoteRequest.Totals t = new CreateQuoteRequest.Totals();
@@ -246,6 +248,52 @@ public class QuoteService {
       });
     }
 
+    return resp;
+  }
+
+  /* ========== COTIZACIÓN RÁPIDA (NO SE PERSISTE EN EL HISTORIAL) ==========
+   * Genera y envía el PDF por correo igual que una cotización normal, pero
+   * no crea fila en `quotes` ni en `quote_items`, ni consume un número
+   * correlativo oficial. Si viene relatedDealId, mueve el deal del embudo
+   * a la etapa PROPUESTA (mismo comportamiento que sendQuoteAndUpdateDeal). */
+  @Transactional
+  public java.util.Map<String, Object> sendQuickQuote(SendQuoteRequest dto, byte[] pdfBytes, String originalFilename) throws Exception {
+    String label = "COT-RAPIDA-" + System.currentTimeMillis();
+    String filename = (originalFilename != null && !originalFilename.trim().isEmpty())
+        ? originalFilename
+        : (label + ".pdf");
+
+    String subj = "Cotización - VCM Group";
+    String body = ""
+        + "<p>Estimado cliente,</p>"
+        + "<p>Adjuntamos la cotización con el detalle de los servicios solicitados.</p>"
+        + "<p>Si tiene alguna consulta o desea proceder, puede responder a este correo.</p>"
+        + "<p>Gracias por confiar en <b>VCM Group</b>.<br/>Atentamente,<br/>Equipo Comercial</p>";
+
+    mailService.sendQuote(dto.getSendTo(), subj, body, pdfBytes, filename);
+
+    Long relatedDealId = (dto.getMeta() != null ? dto.getMeta().getRelatedDealId() : null);
+    if (relatedDealId != null) {
+      dealRepository.findById(relatedDealId).ifPresent(deal -> {
+        deal.setStage("PROPUESTA");
+        if (dto.getTotals() != null && dto.getTotals().getTotal() != null) {
+          deal.setAmount(dto.getTotals().getTotal());
+        }
+        dealRepository.save(deal);
+
+        List<CrmNotification> pending =
+            notifRepository.findByDealIdAndTypeAndStatus(relatedDealId, "QUOTE_REQUEST", "PENDING");
+        for (CrmNotification n : pending) {
+          n.markDone();
+          notifRepository.save(n);
+        }
+      });
+    }
+
+    java.util.Map<String, Object> resp = new java.util.HashMap<>();
+    resp.put("sent", true);
+    resp.put("sentTo", dto.getSendTo());
+    resp.put("dealId", relatedDealId);
     return resp;
   }
 
@@ -392,6 +440,7 @@ public class QuoteService {
     r.number = q.getNumber();
     r.clientId = q.getClientId();
     r.sector = q.getSector();
+    r.currency = q.getCurrency();
     r.subTotal = q.getSubTotal();
     r.igv = q.getIgv();
     r.total = q.getTotal();

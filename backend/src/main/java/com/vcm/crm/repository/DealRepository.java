@@ -14,4 +14,7 @@ public interface DealRepository extends JpaRepository<Deal, Long> {
     List<Deal> findByOrgId(Integer orgId);
 
     Optional<Deal> findFirstByOrgIdAndClient_IdAndStatus(Integer orgId, Integer clientId, String status);
+
+    // Para importación masiva: evita duplicar el deal de una misma fila al re-subir el mismo Excel
+    Optional<Deal> findFirstByOrgIdAndClient_IdAndExternalQuoteNumber(Integer orgId, Integer clientId, String externalQuoteNumber);
 }

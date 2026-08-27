@@ -1,31 +1,133 @@
 import { useEffect, useState } from "react";
 import {
-  Alert, Avatar, Box, Breadcrumbs, Button, CircularProgress, Paper, Stack, Table,
-  TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, Typography
+  Alert, Avatar, Box, Breadcrumbs, Button, Chip, CircularProgress, Dialog,
+  DialogActions, DialogContent, DialogTitle, Paper, Stack, Table,
+  TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination,
+  TextField, Tooltip, Typography, IconButton,
 } from "@mui/material";
 import AppLayout from "../../layout/AppLayout";
 import WebAssetOutlinedIcon from "@mui/icons-material/WebAssetOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import ContentCopyOutlinedIcon from "@mui/icons-material/ContentCopyOutlined";
 
-type Landing = { id: number; name: string; path: string; leads: number; convRate: number; updatedAt?: string|null };
+type Landing = {
+  id: number;
+  name: string;
+  slug: string;
+  active: boolean;
+  leadsCount: number;
+  createdAt?: string | null;
+};
+
+async function listLandings(): Promise<Landing[]> {
+  const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+  const res = await fetch(`/api/marketing/landings`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+async function createLanding(name: string): Promise<void> {
+  const token = localStorage.getItem("accessToken") || localStorage.getItem("token");
+  const res = await fetch(`/api/marketing/landings`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error || "No se pudo crear la landing.");
+  }
+}
+
+function NuevaLandingModal({ open, onClose, onCreated }: { open: boolean; onClose: () => void; onCreated: () => void }) {
+  const [name, setName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  useEffect(() => {
+    if (open) { setName(""); setErrorMsg(""); }
+  }, [open]);
+
+  const handleSave = async () => {
+    if (!name.trim()) { setErrorMsg("El nombre es requerido."); return; }
+    try {
+      setSaving(true);
+      setErrorMsg("");
+      await createLanding(name);
+      onCreated();
+      onClose();
+    } catch (e: any) {
+      setErrorMsg(e?.message || "No se pudo crear la landing.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
+      <DialogTitle sx={{ fontWeight: 800 }}>Nueva Landing / Formulario</DialogTitle>
+      <DialogContent dividers>
+        <Stack spacing={2} sx={{ mt: 0.5 }}>
+          {errorMsg && <Alert severity="error">{errorMsg}</Alert>}
+          <TextField
+            label="Nombre de la landing"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Ej. Landing Contabilidad 2026"
+            fullWidth
+            autoFocus
+          />
+          <Typography variant="caption" color="text.secondary">
+            El path/slug para recibir leads (webhook) se genera automáticamente a partir del nombre.
+          </Typography>
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} disabled={saving}>Cancelar</Button>
+        <Button variant="contained" onClick={handleSave} disabled={saving || !name.trim()}>
+          {saving ? "Creando..." : "Crear Landing"}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
 
 export default function LandingsForm() {
   const [rows, setRows] = useState<Landing[]>([]);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [page, setPage] = useState(0); const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [formOpen, setFormOpen] = useState(false);
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
 
   async function load() {
     try {
       setLoading(true); setErrorMsg("");
-      // TODO: GET /api/marketing/landings
+      const data = await listLandings();
+      setRows(data);
+    } catch (e: any) {
+      setErrorMsg(e?.message || "No se pudieron cargar las landings");
       setRows([]);
-    } catch (e:any) { setErrorMsg(e?.message || "No se pudieron cargar landings"); }
-    finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => { document.title = "Landing / Formularios"; load(); }, []);
+
+  const webhookPath = (slug: string) => `/api/leads/public/${slug}`;
+
+  const copyPath = (slug: string) => {
+    navigator.clipboard?.writeText(window.location.origin + webhookPath(slug));
+    setCopiedSlug(slug);
+    setTimeout(() => setCopiedSlug((s) => (s === slug ? null : s)), 1500);
+  };
+
+  const paged = rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
     <AppLayout title="Landing / Formularios">
@@ -45,11 +147,11 @@ export default function LandingsForm() {
       {errorMsg && <Alert severity="error" sx={{ mb: 2 }}>{errorMsg}</Alert>}
 
       <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1.5 }}>
-        <Button variant="outlined" startIcon={<RefreshIcon/>} onClick={load} disabled={loading}>
+        <Button variant="outlined" startIcon={<RefreshIcon />} onClick={load} disabled={loading}>
           {loading ? "Actualizando..." : "Actualizar"}
         </Button>
         <Box sx={{ flex: 1 }} />
-        <Button variant="contained" startIcon={<AddIcon/>} onClick={()=>alert("Nueva landing/formulario")}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setFormOpen(true)}>
           Nueva Landing
         </Button>
       </Stack>
@@ -60,15 +162,15 @@ export default function LandingsForm() {
             <TableRow sx={{ "& th": { fontWeight: 700 } }}>
               <TableCell>#</TableCell>
               <TableCell>Landing</TableCell>
-              <TableCell>URL / Path</TableCell>
-              <TableCell align="right">Leads</TableCell>
-              <TableCell align="right">% Conversión</TableCell>
-              <TableCell>Actualizado</TableCell>
+              <TableCell>Path para recibir leads</TableCell>
+              <TableCell align="right">Leads capturados</TableCell>
+              <TableCell>Estado</TableCell>
+              <TableCell>Creado</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading && <TableRow><TableCell colSpan={6} align="center"><CircularProgress size={24}/></TableCell></TableRow>}
-            {!loading && rows.map((r, i)=>(
+            {!loading && paged.map((r, i)=>(
               <TableRow key={r.id} hover>
                 <TableCell>{page * rowsPerPage + i + 1}</TableCell>
                 <TableCell>
@@ -76,10 +178,28 @@ export default function LandingsForm() {
                     <WebAssetOutlinedIcon fontSize="small"/><Typography fontWeight={700}>{r.name}</Typography>
                   </Stack>
                 </TableCell>
-                <TableCell>{r.path}</TableCell>
-                <TableCell align="right">{r.leads}</TableCell>
-                <TableCell align="right">{(r.convRate*100).toFixed(1)}%</TableCell>
-                <TableCell>{r.updatedAt ? new Date(r.updatedAt).toLocaleString("es-PE") : "—"}</TableCell>
+                <TableCell>
+                  <Stack direction="row" spacing={0.5} alignItems="center">
+                    <Typography variant="body2" sx={{ fontFamily: "monospace", color: "text.secondary" }}>
+                      {webhookPath(r.slug)}
+                    </Typography>
+                    <Tooltip title={copiedSlug === r.slug ? "¡Copiado!" : "Copiar URL completa"}>
+                      <IconButton size="small" onClick={() => copyPath(r.slug)}>
+                        <ContentCopyOutlinedIcon fontSize="inherit" />
+                      </IconButton>
+                    </Tooltip>
+                  </Stack>
+                </TableCell>
+                <TableCell align="right">{r.leadsCount}</TableCell>
+                <TableCell>
+                  <Chip
+                    size="small"
+                    label={r.active ? "Activa" : "Inactiva"}
+                    color={r.active ? "success" : "default"}
+                    variant="outlined"
+                  />
+                </TableCell>
+                <TableCell>{r.createdAt ? new Date(r.createdAt).toLocaleString("es-PE") : "—"}</TableCell>
               </TableRow>
             ))}
             {!loading && rows.length === 0 && (
@@ -92,6 +212,8 @@ export default function LandingsForm() {
           onPageChange={(_,p)=>setPage(p)} onRowsPerPageChange={(e)=>{setRowsPerPage(parseInt(e.target.value,10)); setPage(0);}}
           labelRowsPerPage="Filas:" />
       </TableContainer>
+
+      <NuevaLandingModal open={formOpen} onClose={() => setFormOpen(false)} onCreated={load} />
     </AppLayout>
   );
 }

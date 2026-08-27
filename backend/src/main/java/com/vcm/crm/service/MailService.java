@@ -102,6 +102,59 @@ public class MailService {
     }
 
     /* =====================================================
+             ENVÍO HTML CON IMÁGENES EMBEBIDAS (CID)
+             El htmlBody debe referenciar cada imagen como
+             <img src="cid:CLAVE" .../> (CLAVE = key del map)
+             para que se vea siempre, sin depender de que una
+             URL pública sea alcanzable desde el cliente de correo.
+       ===================================================== */
+    public void sendHtmlWithInlineImages(
+            String to,
+            String subject,
+            String htmlBody,
+            java.util.Map<String, InlineImage> images
+    ) {
+        JavaMailSender sender = senderProvider.getIfAvailable();
+        if (sender == null) {
+            System.out.println("[MailService] No JavaMailSender. Se omite envío a " + to);
+            return;
+        }
+        try {
+            MimeMessage msg = sender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(msg, true, "UTF-8");
+
+            helper.setFrom(fromAddress);
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(htmlBody, true);
+
+            if (images != null) {
+                for (java.util.Map.Entry<String, InlineImage> e : images.entrySet()) {
+                    InlineImage img = e.getValue();
+                    if (img != null && img.bytes != null && img.bytes.length > 0) {
+                        ByteArrayDataSource ds = new ByteArrayDataSource(
+                                img.bytes, img.contentType != null ? img.contentType : "image/png");
+                        helper.addInline(e.getKey(), ds);
+                    }
+                }
+            }
+
+            sender.send(msg);
+        } catch (Exception ex) {
+            throw new RuntimeException("Error enviando email con imágenes a " + to, ex);
+        }
+    }
+
+    public static class InlineImage {
+        public final byte[] bytes;
+        public final String contentType;
+        public InlineImage(byte[] bytes, String contentType) {
+            this.bytes = bytes;
+            this.contentType = contentType;
+        }
+    }
+
+    /* =====================================================
              ENVÍO DE COTIZACIÓN CON PDF ADJUNTO
        ===================================================== */
     public void sendQuote(

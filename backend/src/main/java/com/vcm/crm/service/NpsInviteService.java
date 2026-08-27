@@ -13,6 +13,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +46,18 @@ public class NpsInviteService {
     ClientService cs = clientServiceRepo.findById(req.getClientServiceId())
         .orElseThrow(() -> new NoSuchElementException("ClientService no existe: " + req.getClientServiceId()));
 
+    // Si ya hay una invitación SENT (aún no respondida) para este client_service,
+    // se reutiliza en vez de crear una duplicada con otro link activo en paralelo.
+    Optional<NpsInvite> existing =
+        inviteRepo.findFirstByClientService_IdAndStatusOrderByIdDesc(cs.getId(), NpsInvite.Status.SENT);
+    if (existing.isPresent()) {
+      NpsInvite prev = existing.get();
+      boolean expired = prev.getExpiresAt() != null && LocalDateTime.now(LIMA).isAfter(prev.getExpiresAt());
+      if (!expired) {
+        return toInviteInfo(prev, publicBaseUrl);
+      }
+    }
+
     // Generar token único
     String token;
     int tries = 0;
@@ -62,19 +75,26 @@ public class NpsInviteService {
         .sentAt(now)
         .expiresAt(now.plusDays(30))  // 30 días de validez
         .status(NpsInvite.Status.SENT)
+        .serviceEndDate(cs.getEndDate())
         .build();
 
     invite = inviteRepo.save(invite);
 
-    // 👉 IMPORTANTE: URL pública con query param ?token=
-    // Si publicBaseUrl = "http://localhost:5173/nps" → queda "http://localhost:5173/nps?token=XXXX"
-    String publicUrl = publicBaseUrl + "?token=" + token;
+    return toInviteInfo(invite, publicBaseUrl);
+  }
 
-    String serviceName = (cs.getService() != null && cs.getService().getName() != null)
+  private InviteInfo toInviteInfo(NpsInvite invite, String publicBaseUrl) {
+    ClientService cs = invite.getClientService();
+
+    // 👉 URL pública con query param ?token=
+    // Si publicBaseUrl = "http://localhost:5173/nps" → queda "http://localhost:5173/nps?token=XXXX"
+    String publicUrl = publicBaseUrl + "?token=" + invite.getToken();
+
+    String serviceName = (cs != null && cs.getService() != null && cs.getService().getName() != null)
         ? cs.getService().getName()
         : "nuestro servicio";
 
-    String clientName = cs.getClient() != null ? cs.getClient().getLegalName() : null;
+    String clientName = (cs != null && cs.getClient() != null) ? cs.getClient().getLegalName() : null;
 
     return InviteInfo.builder()
         .id(invite.getId())

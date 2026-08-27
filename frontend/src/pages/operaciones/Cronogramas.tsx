@@ -27,6 +27,14 @@ import {
   Typography,
   IconButton,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 
 import SearchIcon from "@mui/icons-material/Search";
@@ -36,9 +44,11 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import EditIcon from "@mui/icons-material/Edit";
 import EventNoteOutlinedIcon from "@mui/icons-material/EventNoteOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
-import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 
 import AppLayout from "../../layout/AppLayout";
+import CronogramaFormModal, { type ScheduleFormValue } from "./CronogramaFormModal";
 
 // ======= Tipos =======
 type ScheduleStatus =
@@ -48,9 +58,12 @@ type ScheduleStatus =
   | "COMPLETADO"
   | "CANCELADO";
 
+type ScheduleTaskRow = { id?: number; name: string; done: boolean; dueDate?: string | null };
+
 type Cronograma = {
   id: number;
   code: string; // CRG-YYYY-0001
+  projectId?: number | null;
   projectName: string;
   ownerName?: string | null;
   startDate?: string | null;
@@ -59,6 +72,7 @@ type Cronograma = {
   status: ScheduleStatus;
   totalTasks?: number | null;
   completedTasks?: number | null;
+  tasks?: ScheduleTaskRow[];
 };
 
 // ======= API helpers =======
@@ -118,6 +132,20 @@ export default function Cronogramas() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
+
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<ScheduleFormValue | null>(null);
+  const [viewing, setViewing] = useState<Cronograma | null>(null);
+
+  const toFormValue = (r: Cronograma): ScheduleFormValue => ({
+    id: r.id,
+    projectId: r.projectId,
+    ownerName: r.ownerName,
+    startDate: r.startDate,
+    endDate: r.endDate,
+    status: r.status,
+    tasks: (r.tasks || []).map((t) => ({ ...t })),
+  });
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 350);
@@ -235,7 +263,11 @@ export default function Cronogramas() {
           {loading ? "Actualizando..." : "Actualizar"}
         </Button>
 
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => alert("Abrir modal de nuevo cronograma")}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => { setEditing(null); setFormOpen(true); }}
+        >
           Nuevo Cronograma
         </Button>
       </Stack>
@@ -320,12 +352,15 @@ export default function Cronogramas() {
                   <TableCell align="center">
                     <Stack direction="row" spacing={0.5} justifyContent="center">
                       <Tooltip title="Ver detalle">
-                        <IconButton size="small" color="primary" onClick={() => alert(`Ver ${r.code}`)}>
+                        <IconButton size="small" color="primary" onClick={() => setViewing(r)}>
                           <VisibilityIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Editar">
-                        <IconButton size="small" onClick={() => alert(`Editar ${r.code}`)}>
+                        <IconButton
+                          size="small"
+                          onClick={() => { setEditing(toFormValue(r)); setFormOpen(true); }}
+                        >
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
@@ -360,6 +395,83 @@ export default function Cronogramas() {
           labelRowsPerPage="Filas:"
         />
       </TableContainer>
+
+      <CronogramaFormModal
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        onSaved={fetchData}
+        initial={editing}
+      />
+
+      <Dialog open={!!viewing} onClose={() => setViewing(null)} fullWidth maxWidth="xs">
+        <DialogTitle sx={{ fontWeight: 800 }}>{viewing?.code} — {viewing?.projectName}</DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={1.5}>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography color="text.secondary">Responsable</Typography>
+              <Typography fontWeight={600}>{viewing?.ownerName || "—"}</Typography>
+            </Stack>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography color="text.secondary">Estado</Typography>
+              {viewing && statusChip(viewing.status)}
+            </Stack>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography color="text.secondary">Inicio</Typography>
+              <Typography fontWeight={600}>{fmtDate(viewing?.startDate)}</Typography>
+            </Stack>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography color="text.secondary">Fin</Typography>
+              <Typography fontWeight={600}>{fmtDate(viewing?.endDate)}</Typography>
+            </Stack>
+            <Stack spacing={0.5}>
+              <Typography color="text.secondary" variant="body2">Progreso</Typography>
+              <LinearProgress
+                variant="determinate"
+                value={Math.max(0, Math.min(100, Number(viewing?.progress || 0)))}
+                sx={{ height: 8, borderRadius: 999 }}
+              />
+              <Typography variant="caption" color="text.secondary">
+                {viewing?.completedTasks ?? 0}/{viewing?.totalTasks ?? 0} tareas · {Math.round(Number(viewing?.progress || 0))}%
+              </Typography>
+            </Stack>
+
+            {(viewing?.tasks || []).length > 0 && (
+              <List dense disablePadding sx={{ border: "1px solid #eef2f7", borderRadius: 2 }}>
+                {(viewing?.tasks || []).map((t, i) => (
+                  <ListItem key={t.id ?? i} divider={i < (viewing?.tasks?.length || 0) - 1}>
+                    <ListItemIcon sx={{ minWidth: 32 }}>
+                      {t.done ? (
+                        <CheckCircleOutlineIcon fontSize="small" color="success" />
+                      ) : (
+                        <RadioButtonUncheckedIcon fontSize="small" color="disabled" />
+                      )}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={t.name}
+                      primaryTypographyProps={{
+                        sx: { textDecoration: t.done ? "line-through" : "none", color: t.done ? "text.secondary" : "text.primary" },
+                      }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            )}
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewing(null)}>Cerrar</Button>
+          <Button
+            variant="contained"
+            startIcon={<EditIcon />}
+            onClick={() => {
+              if (viewing) { setEditing(toFormValue(viewing)); setFormOpen(true); }
+              setViewing(null);
+            }}
+          >
+            Editar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppLayout>
   );
 }

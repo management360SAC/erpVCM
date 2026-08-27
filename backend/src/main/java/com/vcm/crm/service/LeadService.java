@@ -262,14 +262,16 @@ public class LeadService {
         Specification<Lead> spec = (root, cq, cb) -> {
             List<Predicate> ps = new ArrayList<>();
             ps.add(cb.between(root.get("createdAt"), start, end));
+            if (StringUtils.hasText(ownerUsername)) {
+                ps.add(cb.equal(root.get("ownerName"), ownerUsername));
+            }
             return cb.and(ps.toArray(new Predicate[0]));
         };
 
         long total = leadRepo.count(spec);
-
-        long open = total;
-        long won = 0L;
-        long lost = 0L;
+        long won = leadRepo.count(spec.and((root, cq, cb) -> cb.equal(root.get("status"), LeadStatus.CONVERTED)));
+        long lost = leadRepo.count(spec.and((root, cq, cb) -> cb.equal(root.get("status"), LeadStatus.DISCARDED)));
+        long open = total - won - lost;
 
         return new LeadStats(total, open, won, lost);
     }

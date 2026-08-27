@@ -52,6 +52,7 @@ interface QuoteApi {
   clientId: number;
   sector: "PRIVADO" | "PUBLICO";
   status: QuoteStatus;
+  currency?: "PEN" | "USD";
   subTotal: number;
   igv: number;
   total: number;
@@ -69,8 +70,8 @@ interface QuoteItemApi {
 }
 
 /* ================= Helpers ================= */
-const PEN = (v: number) =>
-  `S/ ${Number(v || 0).toLocaleString("es-PE", {
+const PEN = (v: number, currency?: string) =>
+  `${currency === "USD" ? "US$" : "S/"} ${Number(v || 0).toLocaleString("es-PE", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
@@ -224,7 +225,7 @@ export default function HistorialCotizaciones() {
   const [svcOpen, setSvcOpen] = useState(false);
   const [svcLoading, setSvcLoading] = useState(false);
   const [svcItems, setSvcItems] = useState<QuoteItemApi[]>([]);
-  const [svcQuote, setSvcQuote] = useState<{ id: number; number: string } | null>(null);
+  const [svcQuote, setSvcQuote] = useState<{ id: number; number: string; currency?: string } | null>(null);
 
   const fetchQuoteItems = async (quoteId: number) => {
     try {
@@ -254,7 +255,7 @@ export default function HistorialCotizaciones() {
   };
 
   const handleOpenServicios = (row: QuoteApi) => {
-    setSvcQuote({ id: row.id, number: row.number });
+    setSvcQuote({ id: row.id, number: row.number, currency: row.currency });
     setSvcItems([]);
     setSvcOpen(true);
     fetchQuoteItems(row.id);
@@ -614,7 +615,7 @@ export default function HistorialCotizaciones() {
                   </TableCell>
 
                   <TableCell align="right">
-                    <Typography fontWeight={600}>{PEN(row.total)}</Typography>
+                    <Typography fontWeight={600}>{PEN(row.total, row.currency)}</Typography>
                   </TableCell>
 
                   <TableCell>
@@ -786,27 +787,27 @@ export default function HistorialCotizaciones() {
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 700 }}>Servicio</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 700, width: 160 }}>Costo (S/)</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700, width: 160 }}>Costo ({svcQuote?.currency === "USD" ? "US$" : "S/"})</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {svcItems.map((it, idx) => (
                   <TableRow key={idx}>
                     <TableCell>{it.name}</TableCell>
-                    <TableCell align="right">{PEN(it.cost)}</TableCell>
+                    <TableCell align="right">{PEN(it.cost, svcQuote?.currency)}</TableCell>
                   </TableRow>
                 ))}
                 <TableRow>
                   <TableCell align="right" sx={{ fontWeight: 700 }}>Subtotal</TableCell>
-                  <TableCell align="right">{PEN(svcSubtotal)}</TableCell>
+                  <TableCell align="right">{PEN(svcSubtotal, svcQuote?.currency)}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell align="right" sx={{ fontWeight: 700 }}>IGV (18%)</TableCell>
-                  <TableCell align="right">{PEN(svcIgv)}</TableCell>
+                  <TableCell align="right">{PEN(svcIgv, svcQuote?.currency)}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell align="right" sx={{ fontWeight: 800 }}>Total</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 800 }}>{PEN(svcTotal)}</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 800 }}>{PEN(svcTotal, svcQuote?.currency)}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -864,7 +865,7 @@ export default function HistorialCotizaciones() {
         </DialogTitle>
         <DialogContent dividers>
           <Alert severity="info" sx={{ mb: 2 }}>
-            Estás a punto de aprobar la cotización <strong>{approveRow?.number}</strong> por un total de <strong>{PEN(approveRow?.total || 0)}</strong>.
+            Estás a punto de aprobar la cotización <strong>{approveRow?.number}</strong> por un total de <strong>{PEN(approveRow?.total || 0, approveRow?.currency)}</strong>.
           </Alert>
           <TextField
             label="Motivo de aprobación (opcional)"

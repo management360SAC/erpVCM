@@ -20,8 +20,8 @@ public class QuoteStatusLog {
     @Column(name = "new_status", nullable = false)
     private String newStatus;
     
-    @Column(name = "changed_by", nullable = false)
-    private Long changedBy;
+    @Column(name = "changed_by")
+    private Long changedBy; // puede ser null: cambios de estado iniciados por el sistema (no un usuario)
     
     @Column(name = "changed_at", nullable = false)
     private LocalDateTime changedAt;

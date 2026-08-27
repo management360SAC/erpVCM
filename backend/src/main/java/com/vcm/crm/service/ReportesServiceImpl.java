@@ -131,9 +131,9 @@ public class ReportesServiceImpl implements ReportesService {
     @SuppressWarnings("unchecked")
     private List<CatPoint> clientesPorSector(Integer orgId) {
         List<Object[]> rows = em.createNativeQuery(
-            "SELECT COALESCE(CAST(sector_id AS CHAR),'Sin sector'), COUNT(*) " +
+            "SELECT COALESCE(sector,'Sin sector'), COUNT(*) " +
             "FROM clients WHERE org_id = :orgId " +
-            "GROUP BY sector_id ORDER BY COUNT(*) DESC LIMIT 8")
+            "GROUP BY sector ORDER BY COUNT(*) DESC LIMIT 8")
             .setParameter("orgId", orgId)
             .getResultList();
         List<CatPoint> list = new ArrayList<>();

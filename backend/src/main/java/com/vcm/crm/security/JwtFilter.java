@@ -46,8 +46,12 @@ public class JwtFilter extends OncePerRequestFilter {
             try {
                 Jws<Claims> jws = jwtUtil.parse(token);
                 String username = jws.getBody().getSubject();
+                String type = jws.getBody().get("type", String.class);
 
-                if (username != null) {
+                // Un refresh token solo sirve para /api/auth/refresh, nunca como
+                // credencial de acceso normal (sería un token de larga duración
+                // circulando como si fuera de corta duración).
+                if (username != null && !"refresh".equals(type)) {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
                     if (jwtUtil.isValid(token, userDetails)) {

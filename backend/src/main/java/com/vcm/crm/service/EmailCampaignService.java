@@ -10,11 +10,13 @@ import com.vcm.crm.repository.ClientRepository;
 import com.vcm.crm.repository.EmailCampaignRecipientRepository;
 import com.vcm.crm.repository.EmailCampaignRepository;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
@@ -130,6 +132,13 @@ public class EmailCampaignService {
             campaign.setHeaderImageContentType(headerImage.getContentType());
         }
 
+        LocalDateTime scheduledAtParsed = parseScheduledAt(scheduledAt);
+        boolean isFutureSchedule = scheduledAtParsed != null && scheduledAtParsed.isAfter(LocalDateTime.now());
+        if (isFutureSchedule) {
+            campaign.setScheduledAt(scheduledAtParsed);
+            campaign.setStatus(EmailCampaignStatus.PROGRAMADA);
+        }
+
         campaign = campaignRepo.save(campaign);
 
         // ---- 5. Recipients de clientes ----
@@ -154,11 +163,36 @@ public class EmailCampaignService {
             campaign.getRecipients().add(r);
         }
 
-        // ---- 7. Enviar en segundo plano ----
-        final EmailCampaign savedCampaign = campaign;
-        sendNowAsync(savedCampaign);
+        // ---- 7. Enviar ahora, salvo que se haya programado para el futuro
+        //         (en ese caso la envía runScheduledCampaigns() cuando llegue la hora) ----
+        if (!isFutureSchedule) {
+            final EmailCampaign savedCampaign = campaign;
+            sendNowAsync(savedCampaign);
+        }
 
         return campaign;
+    }
+
+    private LocalDateTime parseScheduledAt(String scheduledAt) {
+        if (scheduledAt == null || scheduledAt.trim().isEmpty()) return null;
+        try {
+            return LocalDateTime.parse(scheduledAt.trim(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // =========================================================
+    //  JOB: envía las campañas PROGRAMADAs cuya hora ya llegó
+    // =========================================================
+    @Scheduled(cron = "0 */5 * * * *")
+    @Transactional
+    public void runScheduledCampaigns() {
+        List<EmailCampaign> due = campaignRepo.findByStatusAndScheduledAtLessThanEqual(
+                EmailCampaignStatus.PROGRAMADA, LocalDateTime.now());
+        for (EmailCampaign campaign : due) {
+            sendNow(campaign);
+        }
     }
 
     private String appendImageAtBottom(String bodyHtml, MultipartFile headerImage) {

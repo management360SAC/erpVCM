@@ -61,6 +61,27 @@ public class QuoteController {
     }
   }
 
+  // ====== COTIZACIÓN RÁPIDA (embudo de ventas, NO se guarda en el historial) ======
+  @PostMapping(value = "/quick/email", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<?> sendQuickQuote(
+      @RequestPart("data") String dataJson,
+      @RequestPart("file") MultipartFile pdfFile) {
+
+    try {
+      com.vcm.crm.dto.SendQuoteRequest req = objectMapper.readValue(dataJson, com.vcm.crm.dto.SendQuoteRequest.class);
+      byte[] pdfBytes = pdfFile.getBytes();
+      String originalFilename = pdfFile.getOriginalFilename();
+
+      Map<String, Object> response = quoteService.sendQuickQuote(req, pdfBytes, originalFilename);
+      return ResponseEntity.ok(response);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(new ErrorResponse("Error al enviar la cotización rápida: " + e.getMessage()));
+    }
+  }
+
   // ====== DETALLE POR ID ======
   @GetMapping("/{id}")
   public ResponseEntity<?> getById(@PathVariable Long id) {
@@ -180,6 +201,12 @@ public class QuoteController {
       Quote q = repo.findById(quoteId)
           .orElseThrow(() -> new NoSuchElementException("Cotización no encontrada"));
 
+      if (q.getStatus() == QuoteStatus.APROBADA || q.getStatus() == QuoteStatus.RECHAZADA) {
+        Map<String, Object> err = new HashMap<String, Object>();
+        err.put("error", "No se puede cambiar la vigencia de una cotización " + q.getStatus().name().toLowerCase() + ".");
+        return ResponseEntity.badRequest().body(err);
+      }
+
       q.setValidUntil(validUntil);
       repo.save(q);
       return ResponseEntity.ok().build();
@@ -222,6 +249,7 @@ public class QuoteController {
     r.number = q.getNumber();
     r.clientId = q.getClientId();
     r.sector = q.getSector();
+    r.currency = q.getCurrency();
     r.subTotal = q.getSubTotal();
     r.igv = q.getIgv();
     r.total = q.getTotal();

@@ -20,13 +20,13 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
-    @PreAuthorize("hasAuthority('users:read')")
+    @PreAuthorize("hasAuthority('users:read') or hasRole('ADMIN')")
     public ResponseEntity<List<UserResponse>> list() {
         return ResponseEntity.ok(userService.list());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('users:read')")
+    @PreAuthorize("hasAuthority('users:read') or hasRole('ADMIN')")
     public ResponseEntity<UserResponse> get(@PathVariable Integer id) {
         return ResponseEntity.ok(userService.get(id));
     }
@@ -56,6 +56,7 @@ public class UserController {
     }
 
     @PostMapping("/reset-password")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> resetPasswordPublic(@RequestBody ResetPasswordRequest body) {
         userService.resetPasswordByUsername(body.getUsername(), body.getNewPassword());
         return ResponseEntity.noContent().build();

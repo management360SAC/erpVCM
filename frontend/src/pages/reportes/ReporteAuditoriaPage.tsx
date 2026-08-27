@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
 import {
-  Alert, Chip, CircularProgress, Paper,
+  Alert, Box, Chip, CircularProgress, Paper, Stack,
   Table, TableBody, TableCell, TableContainer,
-  TableHead, TablePagination, TableRow, Typography,
+  TableHead, TablePagination, TableRow, Tooltip, Typography,
 } from "@mui/material";
+import EventBusyOutlinedIcon from "@mui/icons-material/EventBusyOutlined";
 
 import AppLayout from "../../layout/AppLayout";
 import PageHeader from "./components/PageHeader";
@@ -18,6 +19,41 @@ const KEY_COLOR: Record<string, "default"|"info"|"success"|"warning"> = {
   export_clientes: "default",
   export_pipeline: "warning",
 };
+
+const KEY_LABEL: Record<string, string> = {
+  dashboard: "Tablero (Dashboard)",
+  pagos: "Reporte de Pagos",
+  clientes: "Reporte de Clientes",
+  pipeline: "Reporte de Pipeline",
+  export_pagos: "Exportación · Pagos",
+  export_clientes: "Exportación · Clientes",
+  export_pipeline: "Exportación · Pipeline",
+};
+
+const FIELD_LABEL: Record<string, string> = {
+  from: "Desde",
+  to: "Hasta",
+  q: "Búsqueda",
+  status: "Estado",
+  sector: "Sector",
+  clientId: "Cliente",
+  page: "Página",
+  size: "Tamaño",
+};
+
+/** Convierte el JSON crudo de filtros en pares legibles, descartando vacíos. */
+function parseFiltros(json: string | null): { key: string; value: string }[] {
+  if (!json) return [];
+  try {
+    const obj = JSON.parse(json);
+    if (!obj || typeof obj !== "object") return [];
+    return Object.entries(obj)
+      .filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== "")
+      .map(([k, v]) => ({ key: FIELD_LABEL[k] ?? k, value: String(v) }));
+  } catch {
+    return [];
+  }
+}
 
 export default function ReporteAuditoriaPage() {
   const [rows, setRows]     = useState<AuditoriaRow[]>([]);
@@ -77,33 +113,50 @@ export default function ReporteAuditoriaPage() {
                     <Typography color="text.secondary">Sin registros de auditoría</Typography>
                   </TableCell>
                 </TableRow>
-              ) : rows.map((r) => (
-                <TableRow key={r.id} hover>
-                  <TableCell>{r.id}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={r.reportKey}
-                      size="small"
-                      color={KEY_COLOR[r.reportKey] ?? "default"}
-                      variant="outlined"
-                    />
-                  </TableCell>
-                  <TableCell>{r.username}</TableCell>
-                  <TableCell
-                    sx={{ maxWidth: 320, overflow: "hidden",
-                          textOverflow: "ellipsis", whiteSpace: "nowrap",
-                          fontSize: 12, color: "text.secondary" }}
-                    title={r.filtrosJson ?? ""}
-                  >
-                    {r.filtrosJson ?? "—"}
-                  </TableCell>
-                  <TableCell sx={{ whiteSpace: "nowrap" }}>
-                    {r.createdAt
-                      ? new Date(r.createdAt).toLocaleString("es-PE")
-                      : "—"}
-                  </TableCell>
-                </TableRow>
-              ))}
+              ) : rows.map((r) => {
+                const filtros = parseFiltros(r.filtrosJson);
+                return (
+                  <TableRow key={r.id} hover>
+                    <TableCell sx={{ color: "text.secondary" }}>#{r.id}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={KEY_LABEL[r.reportKey] ?? r.reportKey}
+                        size="small"
+                        color={KEY_COLOR[r.reportKey] ?? "default"}
+                        variant="outlined"
+                      />
+                    </TableCell>
+                    <TableCell>{r.username}</TableCell>
+                    <TableCell sx={{ maxWidth: 320 }}>
+                      {filtros.length === 0 ? (
+                        <Stack direction="row" spacing={0.5} alignItems="center" sx={{ color: "text.disabled" }}>
+                          <EventBusyOutlinedIcon fontSize="inherit" />
+                          <Typography variant="caption" color="text.disabled">Sin filtros aplicados</Typography>
+                        </Stack>
+                      ) : (
+                        <Tooltip title={r.filtrosJson ?? ""} arrow>
+                          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                            {filtros.map((f, i) => (
+                              <Chip
+                                key={i}
+                                size="small"
+                                variant="outlined"
+                                label={`${f.key}: ${f.value}`}
+                                sx={{ fontSize: 11, height: 22 }}
+                              />
+                            ))}
+                          </Box>
+                        </Tooltip>
+                      )}
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>
+                      {r.createdAt
+                        ? new Date(r.createdAt).toLocaleString("es-PE")
+                        : "—"}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>

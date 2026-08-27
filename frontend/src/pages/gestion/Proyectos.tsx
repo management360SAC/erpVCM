@@ -27,6 +27,10 @@ import {
   Typography,
   IconButton,
   Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 
 import SearchIcon from "@mui/icons-material/Search";
@@ -37,6 +41,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import WorkOutlineIcon from "@mui/icons-material/WorkOutline";
 import EventIcon from "@mui/icons-material/Event";
 import AppLayout from "../../layout/AppLayout";
+import ProyectoFormModal, { type ProjectFormValue } from "./ProyectoFormModal";
 
 // ========== API helpers ==========
 async function listProjects(params: {
@@ -72,6 +77,7 @@ type Project = {
   id: number;
   code: string; // PRY-YYYY-0001
   name: string;
+  clientId?: number | null;
   clientName?: string | null;
   ownerName?: string | null; // responsable
   budgetTotal?: number | null;
@@ -144,6 +150,10 @@ export default function Proyectos() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalElements, setTotalElements] = useState(0);
+
+  const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<ProjectFormValue | null>(null);
+  const [viewing, setViewing] = useState<Project | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 350);
@@ -265,7 +275,11 @@ export default function Proyectos() {
         <Button variant="outlined" startIcon={<RefreshIcon />} onClick={fetchData} disabled={loading}>
           {loading ? "Actualizando..." : "Actualizar"}
         </Button>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => alert("Abrir modal de nuevo proyecto")}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => { setEditing(null); setFormOpen(true); }}
+        >
           Nuevo Proyecto
         </Button>
       </Stack>
@@ -360,12 +374,28 @@ export default function Proyectos() {
                   <TableCell align="center">
                     <Stack direction="row" spacing={0.5} justifyContent="center">
                       <Tooltip title="Ver detalle">
-                        <IconButton size="small" color="primary" onClick={() => alert(`Ver ${r.code}`)}>
+                        <IconButton size="small" color="primary" onClick={() => setViewing(r)}>
                           <VisibilityIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
                       <Tooltip title="Editar">
-                        <IconButton size="small" onClick={() => alert(`Editar ${r.code}`)}>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setEditing({
+                              id: r.id,
+                              name: r.name,
+                              clientId: r.clientId,
+                              ownerName: r.ownerName,
+                              budgetTotal: r.budgetTotal,
+                              progress: r.progress,
+                              status: r.status,
+                              startDate: r.startDate,
+                              endDate: r.endDate,
+                            });
+                            setFormOpen(true);
+                          }}
+                        >
                           <EditIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>
@@ -400,6 +430,82 @@ export default function Proyectos() {
           labelRowsPerPage="Filas:"
         />
       </TableContainer>
+
+      <ProyectoFormModal
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        onSaved={fetchData}
+        initial={editing}
+      />
+
+      <Dialog open={!!viewing} onClose={() => setViewing(null)} fullWidth maxWidth="xs">
+        <DialogTitle sx={{ fontWeight: 800 }}>{viewing?.code} — {viewing?.name}</DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={1.5}>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography color="text.secondary">Cliente</Typography>
+              <Typography fontWeight={600}>{viewing?.clientName || "—"}</Typography>
+            </Stack>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography color="text.secondary">Responsable</Typography>
+              <Typography fontWeight={600}>{viewing?.ownerName || "—"}</Typography>
+            </Stack>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography color="text.secondary">Monto total</Typography>
+              <Typography fontWeight={600}>{PEN(viewing?.budgetTotal)}</Typography>
+            </Stack>
+            <Stack direction="row" justifyContent="space-between" alignItems="center">
+              <Typography color="text.secondary">Estado</Typography>
+              {viewing && statusChip(viewing.status)}
+            </Stack>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography color="text.secondary">Inicio</Typography>
+              <Typography fontWeight={600}>{fmtDate(viewing?.startDate)}</Typography>
+            </Stack>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography color="text.secondary">Fin</Typography>
+              <Typography fontWeight={600}>{fmtDate(viewing?.endDate)}</Typography>
+            </Stack>
+            <Stack spacing={0.5}>
+              <Typography color="text.secondary" variant="body2">Avance</Typography>
+              <LinearProgress
+                variant="determinate"
+                value={Math.max(0, Math.min(100, Number(viewing?.progress || 0)))}
+                sx={{ height: 8, borderRadius: 999 }}
+              />
+              <Typography variant="caption" color="text.secondary">
+                {Math.round(Number(viewing?.progress || 0))}%
+              </Typography>
+            </Stack>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewing(null)}>Cerrar</Button>
+          <Button
+            variant="contained"
+            startIcon={<EditIcon />}
+            onClick={() => {
+              if (viewing) {
+                setEditing({
+                  id: viewing.id,
+                  name: viewing.name,
+                  clientId: viewing.clientId,
+                  ownerName: viewing.ownerName,
+                  budgetTotal: viewing.budgetTotal,
+                  progress: viewing.progress,
+                  status: viewing.status,
+                  startDate: viewing.startDate,
+                  endDate: viewing.endDate,
+                });
+                setFormOpen(true);
+              }
+              setViewing(null);
+            }}
+          >
+            Editar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppLayout>
   );
 }

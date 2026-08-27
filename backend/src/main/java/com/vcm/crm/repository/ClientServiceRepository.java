@@ -28,6 +28,9 @@ public interface ClientServiceRepository extends JpaRepository<ClientService, In
 
   List<ClientService> findByEndDateBeforeAndActiveTrue(LocalDate date);
 
+  // Vencidos de verdad: independientemente de si ya se desactivaron al completarse
+  List<ClientService> findByEndDateBefore(LocalDate date);
+
   List<ClientService> findByEndDateAfterAndActiveTrue(LocalDate date);
   List<ClientService> findByActiveTrue();
   List<ClientService> findByEndDateAndActiveTrue(LocalDate endDate);

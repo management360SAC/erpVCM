@@ -34,9 +34,9 @@ public class ServiceTrackingService {
                 })
                 .count();
 
-        long expired = allActive.stream()
-                .filter(cs -> cs.getEndDate() != null && cs.getEndDate().isBefore(today))
-                .count();
+        // Vencidos: sin filtrar por active, porque muchos flujos (ej. NPS) desactivan
+        // el servicio apenas se completa/vence, y aun así deben verse aquí.
+        long expired = clientServiceRepository.findByEndDateBefore(today).size();
 
         Summary s = new Summary();
         s.setTotalActive(totalActive);
@@ -58,11 +58,11 @@ public class ServiceTrackingService {
                 .collect(Collectors.toList());
     }
 
-    /** Servicios ya expirados (end_date < hoy) */
+    /** Servicios ya expirados (end_date < hoy), sin importar si ya se desactivaron */
     public List<ExpiryRow> findExpired() {
         LocalDate today = LocalDate.now();
         return clientServiceRepository
-                .findByEndDateBeforeAndActiveTrue(today)
+                .findByEndDateBefore(today)
                 .stream()
                 .map(cs -> toExpiryRow(cs, 30, today))
                 .collect(Collectors.toList());

@@ -1,6 +1,9 @@
 // src/pages/pipeline/EmbudoVentas.tsx
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
   Alert,
   Avatar,
   Box,
@@ -8,22 +11,33 @@ import {
   Button,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   IconButton,
   InputAdornment,
+  MenuItem,
+  Pagination,
   Paper,
   Stack,
   TextField,
   Tooltip,
   Typography,
-  Divider,
 } from "@mui/material";
 import AppLayout from "../../layout/AppLayout";
 
 import SearchIcon from "@mui/icons-material/Search";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import AddIcon from "@mui/icons-material/Add";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import MonetizationOnOutlinedIcon from "@mui/icons-material/MonetizationOnOutlined";
 import LaunchOutlinedIcon from "@mui/icons-material/LaunchOutlined";
+import RequestQuoteOutlinedIcon from "@mui/icons-material/RequestQuoteOutlined";
+import CotizacionRapidaModal from "./CotizacionRapidaModal";
+import NuevaOportunidadModal from "./NuevaOportunidadModal";
+
+const PAGE_SIZE = 10;
 
 // ======= Etapas del embudo (ajusta si tu dominio usa otras) =======
 export type Stage =
@@ -48,6 +62,7 @@ const STAGES: { key: Stage; title: string; color: "default" | "primary" | "succe
 type Deal = {
   id: number;
   title: string;           // nombre de la oportunidad
+  clientId?: number|null;
   clientName?: string|null;
   amount?: number|null;    // valor PEN
   ownerName?: string|null; // responsable
@@ -91,7 +106,7 @@ async function updateDealStage(id: number, stage: Stage) {
 }
 
 // ======= Card de oportunidad =======
-function DealCard({ deal, onOpen }: { deal: Deal; onOpen: (d: Deal) => void }) {
+function DealCard({ deal, onOpen, onQuote }: { deal: Deal; onOpen: (d: Deal) => void; onQuote: (d: Deal) => void }) {
   return (
     <Paper
       elevation={0}
@@ -128,7 +143,12 @@ function DealCard({ deal, onOpen }: { deal: Deal; onOpen: (d: Deal) => void }) {
             </Typography>
           )}
         </Stack>
-        <Stack direction="row" justifyContent="flex-end">
+        <Stack direction="row" justifyContent="flex-end" spacing={0.5}>
+          <Tooltip title="Cotización rápida (no se guarda en el historial)">
+            <IconButton size="small" onClick={() => onQuote(deal)}>
+              <RequestQuoteOutlinedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
           <Tooltip title="Abrir oportunidad">
             <IconButton size="small" onClick={() => onOpen(deal)}>
               <LaunchOutlinedIcon fontSize="small" />
@@ -140,32 +160,50 @@ function DealCard({ deal, onOpen }: { deal: Deal; onOpen: (d: Deal) => void }) {
   );
 }
 
-// ======= Columna de etapa =======
-function StageColumn({
+// ======= Sección de etapa (acordeón) =======
+function StageAccordion({
   title,
   color,
   stageKey,
   items,
   onDropDeal,
+  onQuote,
+  onOpen,
   totalAmount,
+  expanded,
+  onToggle,
 }: {
   title: string;
   color: "default" | "primary" | "success" | "warning" | "info" | "error";
   stageKey: Stage;
   items: Deal[];
   onDropDeal: (dealId: number, toStage: Stage) => void;
+  onQuote: (d: Deal) => void;
+  onOpen: (d: Deal) => void;
   totalAmount: number;
+  expanded: boolean;
+  onToggle: () => void;
 }) {
-  const ref = useRef<HTMLDivElement | null>(null);
+  const [page, setPage] = useState(0);
+  const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const pageItems = items.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(0);
+  }, [items.length]);
 
   return (
-    <Box
-      ref={ref}
+    <Accordion
+      expanded={expanded}
+      onChange={onToggle}
+      disableGutters
+      elevation={0}
       sx={{
-        width: 320,
-        minWidth: 320,
-        maxWidth: 360,
-        mr: 2,
+        border: "1px solid #e9eef5",
+        borderRadius: "12px !important",
+        "&:before": { display: "none" },
+        overflow: "hidden",
       }}
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
@@ -173,34 +211,30 @@ function StageColumn({
         if (!isNaN(id)) onDropDeal(id, stageKey);
       }}
     >
-      <Paper
-        elevation={0}
-        sx={{
-          p: 1.25,
-          borderRadius: 2,
-          border: "1px solid #e9eef5",
-          background: "#f8fbff",
-          mb: 1,
-        }}
-      >
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
+      <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={{ background: "#f8fbff" }}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+          sx={{ width: "100%", pr: 1 }}
+        >
           <Stack direction="row" spacing={1} alignItems="center">
             <Chip size="small" color={color} label={title} />
             <Typography variant="caption" color="text.secondary">
-              {items.length} deals
+              {items.length} {items.length === 1 ? "oportunidad" : "oportunidades"}
             </Typography>
           </Stack>
-          <Typography variant="caption" fontWeight={700}>
+          <Typography variant="body2" fontWeight={700}>
             {PEN(totalAmount)}
           </Typography>
         </Stack>
-      </Paper>
+      </AccordionSummary>
 
-      {/* Zona de tarjetas */}
-      <Box sx={{ minHeight: 60 }}>
-        {items.map((d) => (
-          <DealCard key={d.id} deal={d} onOpen={(deal) => alert(`Abrir ${deal.title} (#${deal.id})`)} />
+      <AccordionDetails sx={{ background: "#fbfdff", minHeight: 72 }}>
+        {pageItems.map((d) => (
+          <DealCard key={d.id} deal={d} onOpen={onOpen} onQuote={onQuote} />
         ))}
+
         {items.length === 0 && (
           <Paper
             elevation={0}
@@ -217,8 +251,19 @@ function StageColumn({
             Arrastra oportunidades aquí
           </Paper>
         )}
-      </Box>
-    </Box>
+
+        {totalPages > 1 && (
+          <Stack alignItems="center" sx={{ mt: 1.5 }}>
+            <Pagination
+              size="small"
+              count={totalPages}
+              page={safePage + 1}
+              onChange={(_, p) => setPage(p - 1)}
+            />
+          </Stack>
+        )}
+      </AccordionDetails>
+    </Accordion>
   );
 }
 
@@ -229,6 +274,22 @@ export default function EmbudoVentas() {
   const [errorMsg, setErrorMsg] = useState("");
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState(q);
+  const [quoteDeal, setQuoteDeal] = useState<Deal | null>(null);
+  const [newDealOpen, setNewDealOpen] = useState(false);
+  const [viewDeal, setViewDeal] = useState<Deal | null>(null);
+  const [changingStage, setChangingStage] = useState(false);
+  const [expandedStages, setExpandedStages] = useState<Set<Stage>>(
+    () => new Set(STAGES.map((s) => s.key))
+  );
+
+  const toggleStage = (key: Stage) => {
+    setExpandedStages((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q), 300);
@@ -307,90 +368,176 @@ export default function EmbudoVentas() {
       {/* Encabezado */}
       <Paper
         elevation={0}
-        sx={{ p: 2.5, mb: 2, borderRadius: 3, border: "1px solid #eef2f7", background: "#eef6ff" }}
+        sx={{ p: { xs: 2, sm: 2.5 }, mb: 2, borderRadius: 3, border: "1px solid #eef2f7", background: "#eef6ff" }}
       >
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Box>
-            <Typography variant="h5" fontWeight={800}>Embudo de Ventas</Typography>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2}>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h5" fontWeight={800} sx={{ fontSize: { xs: "1.25rem", sm: "1.5rem" } }}>
+              Embudo de Ventas
+            </Typography>
             <Breadcrumbs sx={{ mt: 0.5 }}>
               <Typography color="text.secondary">Gestión</Typography>
               <Typography color="text.primary">Pipeline</Typography>
             </Breadcrumbs>
           </Box>
-          <Avatar src="/marca-secundaria.png" sx={{ width: 72, height: 72 }} />
+          <Avatar
+            src="/marca-secundaria.png"
+            sx={{ width: { xs: 48, sm: 72 }, height: { xs: 48, sm: 72 }, flexShrink: 0 }}
+          />
         </Stack>
       </Paper>
 
       {/* Filtros / acciones */}
-      <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1.5 }}>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={1.5}
+        alignItems={{ xs: "stretch", sm: "center" }}
+        sx={{ mb: 1.5 }}
+      >
         <TextField
           size="small"
           placeholder="Buscar por oportunidad, cliente o responsable"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          sx={{ width: 420 }}
+          sx={{ width: { xs: "100%", sm: 420 } }}
           InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> }}
         />
 
-        <Box sx={{ flex: 1 }} />
+        <Box sx={{ flex: 1, display: { xs: "none", sm: "block" } }} />
 
-        <Button variant="outlined" startIcon={<RefreshIcon />} onClick={load} disabled={loading}>
-          {loading ? "Actualizando..." : "Actualizar"}
-        </Button>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => alert("Crear nueva oportunidad")}>
-          Nueva Oportunidad
-        </Button>
+        <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap sx={{ rowGap: 1 }}>
+          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={load} disabled={loading} sx={{ flex: { xs: 1, sm: "0 0 auto" } }}>
+            {loading ? "Actualizando..." : "Actualizar"}
+          </Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setNewDealOpen(true)} sx={{ flex: { xs: 1, sm: "0 0 auto" } }}>
+            Nueva Oportunidad
+          </Button>
+        </Stack>
       </Stack>
 
       {/* Errores */}
       {errorMsg && <Alert severity="error" sx={{ mb: 2 }}>{errorMsg}</Alert>}
 
-      {/* Board */}
-      <Paper
-        elevation={0}
-        sx={{
-          border: "1px solid #eef2f7",
-          borderRadius: 3,
-          overflow: "hidden",
-          background: "#fff",
-        }}
-      >
-        {loading ? (
-          <Box sx={{ p: 6, textAlign: "center" }}>
-            <CircularProgress size={28} />
-          </Box>
-        ) : (
-          <>
-            <Box sx={{ p: 1.5, borderBottom: "1px solid #eef2f7", background: "#fbfdff" }}>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Typography variant="body2" color="text.secondary">
-                  Arrastra tarjetas entre etapas para cambiar su estado.
-                </Typography>
-                <Divider orientation="vertical" flexItem />
-                <Typography variant="body2">
-                  Ganado: <b>{PEN(totals.CERRADO_GANADO)}</b>
-                </Typography>
-              </Stack>
-            </Box>
+      {/* Board (acordeón vertical, una etapa debajo de la otra) */}
+      {loading ? (
+        <Paper elevation={0} sx={{ border: "1px solid #eef2f7", borderRadius: 3, p: 6, textAlign: "center" }}>
+          <CircularProgress size={28} />
+        </Paper>
+      ) : (
+        <Stack spacing={1.5}>
+          <Paper
+            elevation={0}
+            sx={{ p: 1.5, borderRadius: 3, border: "1px solid #eef2f7", background: "#fbfdff" }}
+          >
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={{ xs: 0.5, sm: 2 }}
+              alignItems={{ xs: "flex-start", sm: "center" }}
+              justifyContent="space-between"
+            >
+              <Typography variant="body2" color="text.secondary">
+                Arrastra tarjetas entre etapas (o usa "Cambiar etapa" desde el detalle) para actualizar su estado.
+              </Typography>
+              <Typography variant="body2">
+                Ganado: <b>{PEN(totals.CERRADO_GANADO)}</b>
+              </Typography>
+            </Stack>
+          </Paper>
 
-            <Box sx={{ p: 1.5, overflowX: "auto" }}>
-              <Stack direction="row" alignItems="flex-start">
-                {STAGES.map((s) => (
-                  <StageColumn
-                    key={s.key}
-                    title={s.title}
-                    color={s.color}
-                    stageKey={s.key}
-                    items={grouped[s.key] || []}
-                    totalAmount={totals[s.key] || 0}
-                    onDropDeal={handleDrop}
-                  />
-                ))}
-              </Stack>
-            </Box>
-          </>
-        )}
-      </Paper>
+          {STAGES.map((s) => (
+            <StageAccordion
+              key={s.key}
+              title={s.title}
+              color={s.color}
+              stageKey={s.key}
+              items={grouped[s.key] || []}
+              totalAmount={totals[s.key] || 0}
+              onDropDeal={handleDrop}
+              onQuote={setQuoteDeal}
+              onOpen={setViewDeal}
+              expanded={expandedStages.has(s.key)}
+              onToggle={() => toggleStage(s.key)}
+            />
+          ))}
+        </Stack>
+      )}
+
+      {quoteDeal && (
+        <CotizacionRapidaModal
+          open={!!quoteDeal}
+          onClose={() => setQuoteDeal(null)}
+          dealId={quoteDeal.id}
+          dealTitle={quoteDeal.title}
+          clientId={quoteDeal.clientId}
+          clientName={quoteDeal.clientName || undefined}
+          onSent={load}
+        />
+      )}
+
+      <NuevaOportunidadModal
+        open={newDealOpen}
+        onClose={() => setNewDealOpen(false)}
+        onCreated={load}
+      />
+
+      <Dialog open={!!viewDeal} onClose={() => setViewDeal(null)} fullWidth maxWidth="xs">
+        <DialogTitle sx={{ fontWeight: 800 }}>{viewDeal?.title}</DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={1.5}>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography color="text.secondary">Cliente</Typography>
+              <Typography fontWeight={600}>{viewDeal?.clientName || "—"}</Typography>
+            </Stack>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography color="text.secondary">Responsable</Typography>
+              <Typography fontWeight={600}>{viewDeal?.ownerName || "Sin asignar"}</Typography>
+            </Stack>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography color="text.secondary">Monto</Typography>
+              <Typography fontWeight={600}>{PEN(viewDeal?.amount)}</Typography>
+            </Stack>
+            <TextField
+              select
+              size="small"
+              label="Etapa"
+              value={viewDeal?.stage || ""}
+              disabled={changingStage}
+              onChange={async (e) => {
+                const toStage = e.target.value as Stage;
+                if (!viewDeal || toStage === viewDeal.stage) return;
+                setChangingStage(true);
+                await handleDrop(viewDeal.id, toStage);
+                setChangingStage(false);
+                setViewDeal((d) => (d ? { ...d, stage: toStage } : d));
+              }}
+              fullWidth
+            >
+              {STAGES.map((s) => (
+                <MenuItem key={s.key} value={s.key}>{s.title}</MenuItem>
+              ))}
+            </TextField>
+            <Stack direction="row" justifyContent="space-between">
+              <Typography color="text.secondary">Creado</Typography>
+              <Typography fontWeight={600}>
+                {viewDeal?.createdAt ? new Date(viewDeal.createdAt).toLocaleDateString("es-PE") : "—"}
+              </Typography>
+            </Stack>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewDeal(null)}>Cerrar</Button>
+          <Button
+            variant="contained"
+            startIcon={<RequestQuoteOutlinedIcon />}
+            onClick={() => {
+              if (viewDeal) setQuoteDeal(viewDeal);
+              setViewDeal(null);
+            }}
+          >
+            Cotizar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppLayout>
   );
 }

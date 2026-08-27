@@ -45,4 +45,7 @@ public interface LeadRepository extends JpaRepository<Lead, Integer>, JpaSpecifi
     
     // Total de leads en rango de fecha
     Long countByCreatedAtBetween(LocalDateTime from, LocalDateTime to);
+
+    // Total de leads capturados por un formulario/landing
+    Long countByForm_Id(Integer formId);
 }

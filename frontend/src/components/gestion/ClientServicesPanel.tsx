@@ -87,7 +87,9 @@ export default function ClientServicesPanel({ clientId }: { clientId: number }) 
   const toggleActive = async (r: ClientServiceDTO) => {
     try {
       // PATCH /client-services/{clientServiceId}
-      await updateClientService(r.id!, { isActive: !r.isActive });
+      // El backend espera el campo "active" (no "isActive", que es solo la
+      // normalización que usamos en el front al leer la respuesta).
+      await updateClientService(r.id!, { active: !r.isActive } as Partial<ClientServiceDTO> & { active: boolean });
       load();
     } catch (e) {
       console.error(e);

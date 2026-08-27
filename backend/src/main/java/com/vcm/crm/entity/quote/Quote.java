@@ -28,6 +28,9 @@ public class Quote {
   
   @Column(nullable=false, length=10)
   private String sector; // PRIVADO|PUBLICO
+
+  @Column(length=3)
+  private String currency = "PEN"; // PEN|USD (solo etiqueta, sin conversión)
   
   @Enumerated(EnumType.STRING)
   @Column(nullable=false, length=10)
@@ -75,6 +78,7 @@ public class Quote {
   void ensureDefaults() {
     if (orgId == null) orgId = 1;
     if (sector == null) sector = "PRIVADO";
+    if (currency == null) currency = "PEN";
     if (subTotal == null) subTotal = BigDecimal.ZERO;
     if (igv == null) igv = BigDecimal.ZERO;
     if (total == null) total = BigDecimal.ZERO;

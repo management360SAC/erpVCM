@@ -22,6 +22,10 @@ public class Deal {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lead_id")
     private MarketingLead lead;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "service_id")
+    private ServiceCatalog service;
     
     @Column(nullable = false, length = 200)
     private String title;
@@ -104,6 +108,14 @@ public class Deal {
 
     public void setLead(MarketingLead lead) {
         this.lead = lead;
+    }
+
+    public ServiceCatalog getService() {
+        return service;
+    }
+
+    public void setService(ServiceCatalog service) {
+        this.service = service;
     }
 
     public String getTitle() {
