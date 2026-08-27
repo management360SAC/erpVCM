@@ -48,4 +48,7 @@ public interface LeadRepository extends JpaRepository<Lead, Integer>, JpaSpecifi
 
     // Total de leads capturados por un formulario/landing
     Long countByForm_Id(Integer formId);
+
+    // Idempotencia de webhooks externos (ej. reintentos de Meta Lead Ads)
+    boolean existsByExternalLeadId(String externalLeadId);
 }

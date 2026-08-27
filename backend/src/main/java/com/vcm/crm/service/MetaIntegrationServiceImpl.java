@@ -98,6 +98,13 @@ public class MetaIntegrationServiceImpl implements MetaIntegrationService {
             return;
         }
 
+        // Meta reintenta el mismo evento de webhook si no responde 200 a tiempo (o por
+        // reentrega manual); sin este chequeo cada reintento crea un lead duplicado.
+        if (leadRepo.existsByExternalLeadId(leadgenId)) {
+            log.info("Meta lead {} ya fue procesado antes, se omite (reintento de webhook).", leadgenId);
+            return;
+        }
+
         try {
             String url = GRAPH_API_BASE + "/" + leadgenId
                     + "?fields=id,field_data,created_time&access_token="
@@ -107,6 +114,7 @@ public class MetaIntegrationServiceImpl implements MetaIntegrationService {
             JsonNode leadData = objectMapper.readTree(response);
 
             Lead lead = new Lead();
+            lead.setExternalLeadId(leadgenId);
             lead.setSourceCode("META_LEAD_ADS");
             lead.setUtmSource("facebook");
             lead.setUtmMedium("lead_ads");

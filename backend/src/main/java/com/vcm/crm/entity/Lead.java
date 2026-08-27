@@ -21,6 +21,11 @@ public class Lead {
     @JoinColumn(name = "form_id")
     private LeadForm form;
 
+    // ID del lead en el sistema externo que lo originó (ej. leadgen_id de Meta),
+    // usado para no duplicar el mismo lead si el proveedor reintenta el webhook.
+    @Column(name = "external_lead_id", unique = true, length = 100)
+    private String externalLeadId;
+
     // --------- TRACKING / UTM / FUENTE ----------
     @Column(name = "source_code")
     private String sourceCode;
@@ -117,6 +122,9 @@ public class Lead {
 
     public String getSourceCode() { return sourceCode; }
     public void setSourceCode(String sourceCode) { this.sourceCode = sourceCode; }
+
+    public String getExternalLeadId() { return externalLeadId; }
+    public void setExternalLeadId(String externalLeadId) { this.externalLeadId = externalLeadId; }
 
     public String getUtmSource() { return utmSource; }
     public void setUtmSource(String utmSource) { this.utmSource = utmSource; }

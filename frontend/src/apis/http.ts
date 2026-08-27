@@ -84,7 +84,10 @@ async function refreshAccessToken(): Promise<string | null> {
   if (!refreshToken) return null;
 
   try {
-    const { data } = await axios.post("/api/auth/refresh", { refreshToken });
+    const { data } = await axios.post<{ accessToken?: string; refreshToken?: string }>(
+      "/api/auth/refresh",
+      { refreshToken }
+    );
     if (data?.accessToken) {
       localStorage.setItem("accessToken", data.accessToken);
       if (data.refreshToken) localStorage.setItem("refreshToken", data.refreshToken);
